@@ -1,0 +1,21 @@
+site_name: cron-translate
+site_description: Cron expressions to plain language and timezone-aware next runs, with DST warnings.
+repo_url: https://github.com/fabiocicerchia/cron-translate
+docs_dir: docs
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      toggle: { icon: material/weather-night, name: Dark mode }
+    - scheme: slate
+      toggle: { icon: material/weather-sunny, name: Light mode }
+
+nav:
+  - Home: README.md
+  - Getting Started: getting-started.md
+  - Architecture: architecture.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.superfences

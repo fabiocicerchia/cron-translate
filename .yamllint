@@ -1,0 +1,10 @@
+extends: default
+
+rules:
+  # GitHub Actions workflows: `on:` is a valid key, no `---` needed.
+  document-start: disable
+  truthy:
+    check-keys: false
+  # SHA-pinned `uses:` lines are inherently long (a commit SHA is 40 chars).
+  line-length:
+    max: 120

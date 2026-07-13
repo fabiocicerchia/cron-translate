@@ -1,0 +1,19 @@
+# Keep build context small and free of secrets.
+.git
+.github
+.githooks
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+build/
+target/
+*.egg-info/
+__pycache__/
+.venv/
+venv/
+*.log
+docs/
+examples/
+site/

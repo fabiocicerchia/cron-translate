@@ -1,0 +1,17 @@
+# Multi-stage build for the cron-translate CLI.
+
+# --- build stage ---
+FROM python:3.12-slim AS build
+WORKDIR /src
+COPY . .
+RUN pip install --no-cache-dir build && python -m build --wheel
+
+# --- runtime stage ---
+FROM python:3.12-slim
+WORKDIR /app
+# Run as non-root.
+RUN useradd -u 10001 -m app
+COPY --from=build /src/dist/*.whl /tmp/
+RUN pip install --no-cache-dir /tmp/*.whl && rm /tmp/*.whl
+USER app
+ENTRYPOINT ["cron-translate"]
