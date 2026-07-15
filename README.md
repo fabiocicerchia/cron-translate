@@ -31,6 +31,12 @@ $ cron-translate '30 2 * * *' --tz America/New_York
 ## Install
 
 ```sh
+curl -fsSL https://raw.githubusercontent.com/fabiocicerchia/cron-translate/main/install.sh | bash
+```
+
+Or with pipx directly:
+
+```sh
 pipx install .        # or: pip install .
 ```
 
