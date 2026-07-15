@@ -7,6 +7,7 @@ cron-translate '0 2 * * 0' --tz America/New_York   # warns about DST skips
 """
 
 import argparse
+import re
 import sys
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -14,6 +15,17 @@ from zoneinfo import ZoneInfo
 from croniter import croniter
 
 DOW = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+DOW_NUMS = {
+    "monday": 1,
+    "tuesday": 2,
+    "wednesday": 3,
+    "thursday": 4,
+    "friday": 5,
+    "saturday": 6,
+    "sunday": 0,
+}
+_INTERVAL_RE = re.compile(r"^every\s+(\d+)\s+(minute|hour)s?$", re.I)
+_AT_TIME_RE = re.compile(r"at\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?", re.I)
 MONTHS = [
     "January",
     "February",
@@ -96,6 +108,40 @@ def describe(expr):
     return f"{time_part}, {' and '.join(day_bits)}"
 
 
+def phrase_to_cron(phrase):
+    """Parse common English phrasings ('every weekday at 9am', 'every 15 minutes')
+    into a 5-field cron expression, or return None if the phrase isn't recognized."""
+    text = phrase.strip().lower()
+
+    m = _INTERVAL_RE.match(text)
+    if m:
+        n, unit = m.groups()
+        return f"*/{n} * * * *" if unit == "minute" else f"0 */{n} * * *"
+
+    m = _AT_TIME_RE.search(text)
+    if not m:
+        return None
+    hour, minute, ampm = m.groups()
+    hour, minute = int(hour), int(minute or 0)
+    if ampm:
+        ampm = ampm.lower()
+        if ampm == "pm" and hour != 12:
+            hour += 12
+        elif ampm == "am" and hour == 12:
+            hour = 0
+    if not (0 <= hour <= 23 and 0 <= minute <= 59):
+        return None
+
+    prefix = text[: m.start()]
+    if "every weekday" in prefix:
+        dow = "1-5"
+    elif "every weekend" in prefix:
+        dow = "6,0"
+    else:
+        dow = next((str(n) for name, n in DOW_NUMS.items() if name in prefix), "*")
+    return f"{minute} {hour} * * {dow}"
+
+
 def dst_warnings(expr, tz, runs=100):
     """Detect schedule times that get skipped or doubled by DST transitions."""
     warnings = []
@@ -133,8 +179,12 @@ def main(argv=None):
 
     expr = args.expression.strip()
     if not croniter.is_valid(expr):
-        print(f"cron-translate: invalid cron expression: {expr!r}", file=sys.stderr)
-        return 64
+        translated = phrase_to_cron(expr)
+        if translated and croniter.is_valid(translated):
+            expr = translated
+        else:
+            print(f"cron-translate: invalid cron expression: {expr!r}", file=sys.stderr)
+            return 64
 
     print(f"{expr}\n  → {describe(expr)}\n")
     zone = ZoneInfo(args.tz)
