@@ -1,6 +1,8 @@
-from cron_translate import describe, dst_warnings, main, phrase_to_cron, runs_between
+import json
 from datetime import datetime
 from zoneinfo import ZoneInfo
+
+from cron_translate import describe, dst_warnings, main, phrase_to_cron, runs_between
 
 
 def test_describe_simple_time():
@@ -68,3 +70,17 @@ def test_cli_between(capsys):
     out = capsys.readouterr().out
     assert "Runs between" in out
     assert "2026-07-02" in out and "2026-07-03" in out
+
+
+def test_cli_json_output(capsys):
+    assert main(["0 3 * * *", "--next", "2", "--json"]) == 0
+    data = json.loads(capsys.readouterr().out)
+    assert data["expression"] == "0 3 * * *"
+    assert len(data["runs"]) == 2
+    assert data["dst_warnings"] == []
+
+
+def test_cli_json_invalid_expression(capsys):
+    assert main(["not a cron", "--json"]) == 64
+    data = json.loads(capsys.readouterr().out)
+    assert "error" in data

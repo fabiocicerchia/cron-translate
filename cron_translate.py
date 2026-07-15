@@ -7,6 +7,7 @@ cron-translate '0 2 * * 0' --tz America/New_York   # warns about DST skips
 """
 
 import argparse
+import json
 import re
 import sys
 from datetime import datetime, timedelta
@@ -199,6 +200,7 @@ def main(argv=None):
         metavar=("START", "END"),
         help="list every run within [START, END] (ISO 8601, e.g. 2026-07-15T00:00)",
     )
+    p.add_argument("--json", action="store_true", help="emit machine-readable JSON")
     args = p.parse_args(argv)
 
     expr = args.expression.strip()
@@ -207,31 +209,54 @@ def main(argv=None):
         if translated and croniter.is_valid(translated):
             expr = translated
         else:
-            print(f"cron-translate: invalid cron expression: {expr!r}", file=sys.stderr)
+            if args.json:
+                print(json.dumps({"error": f"invalid cron expression: {expr}"}))
+            else:
+                print(f"cron-translate: invalid cron expression: {expr!r}", file=sys.stderr)
             return 64
 
-    print(f"{expr}\n  → {describe(expr)}\n")
     zone = ZoneInfo(args.tz)
     if args.between:
         start = _parse_dt(args.between[0], zone)
         end = _parse_dt(args.between[1], zone)
         runs = runs_between(expr, start, end)
+    else:
+        it = croniter(expr, datetime.now(zone))
+        runs = [it.get_next(datetime) for _ in range(args.count)]
+
+    warnings = (
+        dst_warnings(expr, args.tz) if not args.no_dst_check and args.tz != "UTC" else []
+    )
+
+    if args.json:
+        print(
+            json.dumps(
+                {
+                    "expression": expr,
+                    "description": describe(expr),
+                    "tz": args.tz,
+                    "runs": [r.isoformat() for r in runs],
+                    "dst_warnings": warnings,
+                }
+            )
+        )
+        return 0
+
+    print(f"{expr}\n  → {describe(expr)}\n")
+    if args.between:
         print(f"Runs between {start:%Y-%m-%d %H:%M %Z} and {end:%Y-%m-%d %H:%M %Z}: {len(runs)}")
         for nxt in runs:
             print(f"  {nxt:%Y-%m-%d %H:%M %Z}")
     else:
-        it = croniter(expr, datetime.now(zone))
         print(f"Next {args.count} runs ({args.tz}):")
-        for _ in range(args.count):
-            nxt = it.get_next(datetime)
+        for nxt in runs:
             delta = nxt - datetime.now(zone)
             hours = delta / timedelta(hours=1)
             rel = f"in {delta.days}d" if delta.days else f"in {hours:.1f}h"
             print(f"  {nxt:%Y-%m-%d %H:%M %Z}  ({rel})")
 
-    if not args.no_dst_check and args.tz != "UTC":
-        for w in dst_warnings(expr, args.tz):
-            print(f"\n⚠ {w}")
+    for w in warnings:
+        print(f"\n⚠ {w}")
     return 0
 
 

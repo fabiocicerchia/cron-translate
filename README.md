@@ -53,7 +53,7 @@ crontabs: `cron-translate "$SCHEDULE" >/dev/null`.
 
 - [x] Reverse mode: `cron-translate "every weekday at 9am"` → `0 9 * * 1-5`
 - [x] `--between A B` to list all runs in a window
-- [ ] JSON output for scripting
+- [x] JSON output for scripting
 
 ## Development
 
