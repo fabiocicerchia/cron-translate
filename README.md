@@ -2,8 +2,10 @@
 
 [![CI](https://github.com/fabiocicerchia/cron-translate/actions/workflows/ci.yml/badge.svg)](https://github.com/fabiocicerchia/cron-translate/actions/workflows/ci.yml)
 [![Security](https://github.com/fabiocicerchia/cron-translate/actions/workflows/security.yml/badge.svg)](https://github.com/fabiocicerchia/cron-translate/actions/workflows/security.yml)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/fabiocicerchia/cron-translate/badge)](https://securityscorecards.dev/viewer/?uri=github.com/fabiocicerchia/cron-translate)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/fabiocicerchia/cron-translate/badge)](https://securityscorecards.dev/viewer/?uri=github.com/fabiocicerchia/cron-translate)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Ffabiocicerchia%2Fcron-translate.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Ffabiocicerchia%2Fcron-translate?ref=badge_shield)
+[![Release](https://img.shields.io/github/v/release/fabiocicerchia/cron-translate)](https://github.com/fabiocicerchia/cron-translate/releases)
 
 Cron expressions ↔ plain language ↔ **timezone-aware next-run times**, with
 **DST warnings**. Small, self-contained, pipeable.
