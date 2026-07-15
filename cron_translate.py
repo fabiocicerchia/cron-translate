@@ -142,6 +142,24 @@ def phrase_to_cron(phrase):
     return f"{minute} {hour} * * {dow}"
 
 
+def _parse_dt(s, zone):
+    """Parse an ISO 8601 datetime, defaulting to `zone` when it has no offset."""
+    dt = datetime.fromisoformat(s)
+    return dt if dt.tzinfo else dt.replace(tzinfo=zone)
+
+
+def runs_between(expr, start, end):
+    """List every run of expr in [start, end], both tz-aware datetimes."""
+    it = croniter(expr, start)
+    runs = []
+    while True:
+        nxt = it.get_next(datetime)
+        if nxt > end:
+            break
+        runs.append(nxt)
+    return runs
+
+
 def dst_warnings(expr, tz, runs=100):
     """Detect schedule times that get skipped or doubled by DST transitions."""
     warnings = []
@@ -175,6 +193,12 @@ def main(argv=None):
         "--next", type=int, default=3, dest="count", help="how many next runs to show"
     )
     p.add_argument("--no-dst-check", action="store_true", help="skip DST warnings")
+    p.add_argument(
+        "--between",
+        nargs=2,
+        metavar=("START", "END"),
+        help="list every run within [START, END] (ISO 8601, e.g. 2026-07-15T00:00)",
+    )
     args = p.parse_args(argv)
 
     expr = args.expression.strip()
@@ -188,14 +212,22 @@ def main(argv=None):
 
     print(f"{expr}\n  → {describe(expr)}\n")
     zone = ZoneInfo(args.tz)
-    it = croniter(expr, datetime.now(zone))
-    print(f"Next {args.count} runs ({args.tz}):")
-    for _ in range(args.count):
-        nxt = it.get_next(datetime)
-        delta = nxt - datetime.now(zone)
-        hours = delta / timedelta(hours=1)
-        rel = f"in {delta.days}d" if delta.days else f"in {hours:.1f}h"
-        print(f"  {nxt:%Y-%m-%d %H:%M %Z}  ({rel})")
+    if args.between:
+        start = _parse_dt(args.between[0], zone)
+        end = _parse_dt(args.between[1], zone)
+        runs = runs_between(expr, start, end)
+        print(f"Runs between {start:%Y-%m-%d %H:%M %Z} and {end:%Y-%m-%d %H:%M %Z}: {len(runs)}")
+        for nxt in runs:
+            print(f"  {nxt:%Y-%m-%d %H:%M %Z}")
+    else:
+        it = croniter(expr, datetime.now(zone))
+        print(f"Next {args.count} runs ({args.tz}):")
+        for _ in range(args.count):
+            nxt = it.get_next(datetime)
+            delta = nxt - datetime.now(zone)
+            hours = delta / timedelta(hours=1)
+            rel = f"in {delta.days}d" if delta.days else f"in {hours:.1f}h"
+            print(f"  {nxt:%Y-%m-%d %H:%M %Z}  ({rel})")
 
     if not args.no_dst_check and args.tz != "UTC":
         for w in dst_warnings(expr, args.tz):

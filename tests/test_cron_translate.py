@@ -1,4 +1,6 @@
-from cron_translate import describe, dst_warnings, main, phrase_to_cron
+from cron_translate import describe, dst_warnings, main, phrase_to_cron, runs_between
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 
 def test_describe_simple_time():
@@ -51,3 +53,18 @@ def test_cli_reverse_mode(capsys):
     assert main(["every weekday at 9am", "--next", "1"]) == 0
     out = capsys.readouterr().out
     assert "0 9 * * 1-5" in out
+
+
+def test_runs_between_counts_daily_window():
+    zone = ZoneInfo("UTC")
+    start = datetime(2026, 7, 1, tzinfo=zone)
+    end = datetime(2026, 7, 4, tzinfo=zone)
+    runs = runs_between("0 0 * * *", start, end)
+    assert [r.day for r in runs] == [2, 3, 4]
+
+
+def test_cli_between(capsys):
+    assert main(["0 0 * * *", "--between", "2026-07-01T00:00", "2026-07-03T00:00"]) == 0
+    out = capsys.readouterr().out
+    assert "Runs between" in out
+    assert "2026-07-02" in out and "2026-07-03" in out
