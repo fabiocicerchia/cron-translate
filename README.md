@@ -49,12 +49,6 @@ cron-translate EXPRESSION [--tz IANA_TZ] [--next N] [--no-dst-check]
 Exit codes: `0` OK, `64` invalid expression — safe to use in CI to validate
 crontabs: `cron-translate "$SCHEDULE" >/dev/null`.
 
-## Roadmap
-
-- [x] Reverse mode: `cron-translate "every weekday at 9am"` → `0 9 * * 1-5`
-- [x] `--between A B` to list all runs in a window
-- [x] JSON output for scripting
-
 ## Development
 
 `make setup` (git hooks + pre-commit), then `make dev` and `make test` / `make lint`.
