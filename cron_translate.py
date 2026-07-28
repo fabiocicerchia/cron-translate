@@ -25,8 +25,8 @@ DOW_NUMS = {
     "saturday": 6,
     "sunday": 0,
 }
-_INTERVAL_RE = re.compile(r"^every\s+(\d+)\s+(minute|hour)s?$", re.I)
-_AT_TIME_RE = re.compile(r"at\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?", re.I)
+_INTERVAL_RE = re.compile(r"^every\s+(\d+)\s+(minute|hour)s?$", re.IGNORECASE)
+_AT_TIME_RE = re.compile(r"at\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?", re.IGNORECASE)
 MONTHS = [
     "January",
     "February",
@@ -88,7 +88,9 @@ def describe(expr):
             bits.append(
                 f"past hour {h}"
                 if hour.isdigit()
-                else f"during {h}" if not h.startswith("every") else h
+                else f"during {h}"
+                if not h.startswith("every")
+                else h
             )
         time_part = ", ".join(bits)
 
@@ -169,12 +171,11 @@ def dst_warnings(expr, tz, runs=100):
     prev = None
     for _ in range(runs):
         nxt = it.get_next(datetime)
-        if prev is not None:
-            if prev.utcoffset() != nxt.utcoffset():
-                warnings.append(
-                    f"DST transition between {prev:%Y-%m-%d %H:%M %Z} and {nxt:%Y-%m-%d %H:%M %Z}: "
-                    "a run may be skipped (spring forward) or duplicated (fall back)"
-                )
+        if prev is not None and prev.utcoffset() != nxt.utcoffset():
+            warnings.append(
+                f"DST transition between {prev:%Y-%m-%d %H:%M %Z} and {nxt:%Y-%m-%d %H:%M %Z}: "
+                "a run may be skipped (spring forward) or duplicated (fall back)"
+            )
         prev = nxt
     return warnings[:3]
 
@@ -187,12 +188,8 @@ def main(argv=None):
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     p.add_argument("expression", help="5-field cron expression (quote it)")
-    p.add_argument(
-        "--tz", default="UTC", help="IANA timezone for next runs (default UTC)"
-    )
-    p.add_argument(
-        "--next", type=int, default=3, dest="count", help="how many next runs to show"
-    )
+    p.add_argument("--tz", default="UTC", help="IANA timezone for next runs (default UTC)")
+    p.add_argument("--next", type=int, default=3, dest="count", help="how many next runs to show")
     p.add_argument("--no-dst-check", action="store_true", help="skip DST warnings")
     p.add_argument(
         "--between",
@@ -227,11 +224,7 @@ def main(argv=None):
         it = croniter(expr, datetime.now(zone))
         runs = [it.get_next(datetime) for _ in range(args.count)]
 
-    warnings = (
-        dst_warnings(expr, args.tz)
-        if not args.no_dst_check and args.tz != "UTC"
-        else []
-    )
+    warnings = dst_warnings(expr, args.tz) if not args.no_dst_check and args.tz != "UTC" else []
 
     if args.json:
         print(
@@ -249,9 +242,7 @@ def main(argv=None):
 
     print(f"{expr}\n  → {describe(expr)}\n")
     if args.between:
-        print(
-            f"Runs between {start:%Y-%m-%d %H:%M %Z} and {end:%Y-%m-%d %H:%M %Z}: {len(runs)}"
-        )
+        print(f"Runs between {start:%Y-%m-%d %H:%M %Z} and {end:%Y-%m-%d %H:%M %Z}: {len(runs)}")
         for nxt in runs:
             print(f"  {nxt:%Y-%m-%d %H:%M %Z}")
     else:
