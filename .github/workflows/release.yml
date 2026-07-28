@@ -20,13 +20,13 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # create the tag & release
-      pull-requests: write # open/update the release PR
+      contents: write  # create the tag & release
+      pull-requests: write  # open/update the release PR
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
-      - uses: googleapis/release-please-action@v4
+      - uses: googleapis/release-please-action@5c625bfb5d1ff62eadeeb3772007f7f66fdcf071  # v4
         id: release
         with:
           release-type: python
@@ -36,7 +36,7 @@ jobs:
     if: needs.release-please.outputs.release_created == 'true'
     runs-on: ubuntu-latest
     permissions:
-      contents: write # attach built artifacts to the release
+      contents: write  # attach built artifacts to the release
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6.3.0

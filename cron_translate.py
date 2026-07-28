@@ -212,7 +212,10 @@ def main(argv=None):
             if args.json:
                 print(json.dumps({"error": f"invalid cron expression: {expr}"}))
             else:
-                print(f"cron-translate: invalid cron expression: {expr!r}", file=sys.stderr)
+                print(
+                    f"cron-translate: invalid cron expression: {expr!r}",
+                    file=sys.stderr,
+                )
             return 64
 
     zone = ZoneInfo(args.tz)
@@ -225,7 +228,9 @@ def main(argv=None):
         runs = [it.get_next(datetime) for _ in range(args.count)]
 
     warnings = (
-        dst_warnings(expr, args.tz) if not args.no_dst_check and args.tz != "UTC" else []
+        dst_warnings(expr, args.tz)
+        if not args.no_dst_check and args.tz != "UTC"
+        else []
     )
 
     if args.json:
@@ -244,7 +249,9 @@ def main(argv=None):
 
     print(f"{expr}\n  → {describe(expr)}\n")
     if args.between:
-        print(f"Runs between {start:%Y-%m-%d %H:%M %Z} and {end:%Y-%m-%d %H:%M %Z}: {len(runs)}")
+        print(
+            f"Runs between {start:%Y-%m-%d %H:%M %Z} and {end:%Y-%m-%d %H:%M %Z}: {len(runs)}"
+        )
         for nxt in runs:
             print(f"  {nxt:%Y-%m-%d %H:%M %Z}")
     else:
