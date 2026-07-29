@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.1.0 (2026-07-29)
+
+
+### Features
+
+* add --between A B to list all runs in a window ([84091eb](https://github.com/fabiocicerchia/cron-translate/commit/84091ebbf7d85f7742355a8598b124f7d5ea8b13))
+* add --json output for scripting ([e5165df](https://github.com/fabiocicerchia/cron-translate/commit/e5165dffefb71e154cb5ed28ee6d4bc0ed4bc9e1))
+* add install.sh one-liner installer ([9eb0d24](https://github.com/fabiocicerchia/cron-translate/commit/9eb0d24789f89deef58a3dafba5d0518f15a1caa))
+* add reverse mode to parse phrases into cron expressions ([c7b1dbb](https://github.com/fabiocicerchia/cron-translate/commit/c7b1dbbe22c590646ebed19cd6f5e11fb12125b2))
+
+
+### Bug Fixes
+
+* restore executable bit and combine nested if into and ([#11](https://github.com/fabiocicerchia/cron-translate/issues/11)) ([d6f1b71](https://github.com/fabiocicerchia/cron-translate/commit/d6f1b71a93819050b45d93e893d88b5802084bbf))
+
+
+### Documentation
+
+* add GitHub Pages site, trim completed roadmap items from README ([8d0a8eb](https://github.com/fabiocicerchia/cron-translate/commit/8d0a8eb07577b51259ddcd374d04116dad8b244f))
+* add missing README badges ([9e92e03](https://github.com/fabiocicerchia/cron-translate/commit/9e92e03aa3c5382aed706f5746e8a7e84ff2f58a))
+* remove the broken FOSSA badge ([4e08162](https://github.com/fabiocicerchia/cron-translate/commit/4e081622143db6a8cf74c7ce32bf711d996b8ced))
+
+## Changelog
+
 All notable changes to this project are documented here. The format is based
 on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
