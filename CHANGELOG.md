@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.1](https://github.com/fabiocicerchia/cron-translate/compare/v0.1.0...v0.1.1) (2026-08-05)
+
+
+### Bug Fixes
+
+* **pre-commit:** stop check-yaml failing on Helm templates and multi-doc manifests ([f035a61](https://github.com/fabiocicerchia/cron-translate/commit/f035a61e8106bcb97dd711c269ca9f1e8cdcf845))
+* **security:** skip the SARIF upload on private repos ([00477cc](https://github.com/fabiocicerchia/cron-translate/commit/00477cc947d48d90ccc5ee63835f3a6b8d5fd131))
+
+## Changelog
+
 All notable changes to this project are documented here. The format is based
 on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
