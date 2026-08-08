@@ -23,6 +23,11 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with:
           python-version: "3.12"
+      # TRIAL: long enough to cancel mid-flight. The question is whether the
+      # recorder's post step still runs when a job is cancelled — the entire
+      # reason it is a JS action rather than an `if: always()` step.
+      - name: Sleep so this job can be cancelled
+        run: sleep 180
       - name: Install ruff
         run: pip install ruff
       - name: Ruff
