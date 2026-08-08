@@ -15,10 +15,6 @@ concurrency:
 jobs:
   lint:
     runs-on: ubuntu-latest
-    # TRIAL: the docs claim a job killed by timeout-minutes never records,
-    # because the runner stops without reaching the post step. Never verified.
-    # sleep 180 against a 1-minute budget forces the kill.
-    timeout-minutes: 1
     steps:
       # TRIAL: measuring this job's own energy. Pinned to the PR branch
       # because nothing is released yet. Its post step runs at job end.
@@ -27,11 +23,10 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with:
           python-version: "3.12"
-      # TRIAL: long enough to cancel mid-flight. The question is whether the
-      # recorder's post step still runs when a job is cancelled — the entire
-      # reason it is a JS action rather than an `if: always()` step.
-      - name: Sleep so this job can be cancelled
-        run: sleep 180
+      # TRIAL: a hard step failure — the same path an OOM kill takes, since
+      # the killed process just makes the step exit non-zero.
+      - name: Fail on purpose
+        run: exit 1
       - name: Install ruff
         run: pip install ruff
       - name: Ruff
