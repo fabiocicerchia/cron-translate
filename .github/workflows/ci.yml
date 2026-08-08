@@ -16,6 +16,20 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
+      # TRIAL: can a hosted runner see which Azure region it is in? IMDS is a
+      # link-local address, so no third party, no key, no rate limit — unlike
+      # IP geolocation, which is paid-for-HTTPS and geolocates the NAT gateway.
+      - name: Probe Azure IMDS for the runner region
+        continue-on-error: true
+        run: |
+          echo "--- IMDS ---"
+          curl -s -m 5 -H 'Metadata:true' --noproxy '*' \
+            "http://169.254.169.254/metadata/instance/compute?api-version=2021-02-01" \
+            | head -c 600 || echo "IMDS unreachable"
+          echo
+          echo "--- egress IP (what geolocation would see) ---"
+          curl -s -m 5 https://api.ipify.org || echo "no egress lookup"
+          echo
       # TRIAL: measuring this job's own energy. Pinned to the PR branch
       # because nothing is released yet. Its post step runs at job end.
       - uses: fabiocicerchia/carbon-badge/record@feat/self-reported-measurement
