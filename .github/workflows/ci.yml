@@ -15,6 +15,10 @@ concurrency:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    # TRIAL: the docs claim a job killed by timeout-minutes never records,
+    # because the runner stops without reaching the post step. Never verified.
+    # sleep 180 against a 1-minute budget forces the kill.
+    timeout-minutes: 1
     steps:
       # TRIAL: measuring this job's own energy. Pinned to the PR branch
       # because nothing is released yet. Its post step runs at job end.
