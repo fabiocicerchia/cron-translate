@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/fabiocicerchia/cron-translate/compare/v0.1.1...v0.1.2) (2026-08-13)
+
+
+### Bug Fixes
+
+* security and code-quality findings ([#32](https://github.com/fabiocicerchia/cron-translate/issues/32)) ([102a4bd](https://github.com/fabiocicerchia/cron-translate/commit/102a4bd8505e8a078860143fd2af969b88ba75b1))
+
 ## [0.1.1](https://github.com/fabiocicerchia/cron-translate/compare/v0.1.0...v0.1.1) (2026-08-06)
 
 
