@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.0](https://github.com/fabiocicerchia/cron-translate/compare/v0.1.2...v0.2.0) (2026-08-25)
+
+
+### Features
+
+* **docs:** build the docs site in Actions and drop Read the Docs ([#41](https://github.com/fabiocicerchia/cron-translate/issues/41)) ([e20c3a2](https://github.com/fabiocicerchia/cron-translate/commit/e20c3a27b176155366ebdd45946af5c1cbfc58fa))
+
+
+### Bug Fixes
+
+* **ci:** compute the next release PR after the draft is published ([#38](https://github.com/fabiocicerchia/cron-translate/issues/38)) ([8f51f00](https://github.com/fabiocicerchia/cron-translate/commit/8f51f00a836c6a198be8e8f597691fd556a3ce4e))
+
 ## [0.1.2](https://github.com/fabiocicerchia/cron-translate/compare/v0.1.1...v0.1.2) (2026-08-13)
 
 
