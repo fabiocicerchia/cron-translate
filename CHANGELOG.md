@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/fabiocicerchia/cron-translate/compare/v0.2.0...v0.2.1) (2026-08-29)
+
+
+### Bug Fixes
+
+* unblock quality and clear the Scorecard pinned-dependencies finding ([#50](https://github.com/fabiocicerchia/cron-translate/issues/50)) ([e9e8e01](https://github.com/fabiocicerchia/cron-translate/commit/e9e8e01edc169ab6f6ffef0cb1425129ac5abcd9))
+
 ## [0.2.0](https://github.com/fabiocicerchia/cron-translate/compare/v0.1.2...v0.2.0) (2026-08-25)
 
 
