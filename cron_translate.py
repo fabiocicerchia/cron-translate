@@ -221,7 +221,9 @@ def _build_parser():
     )
     parser.add_argument("expression", help="5-field cron expression (quote it)")
     parser.add_argument("--tz", default="UTC", help="IANA timezone for next runs (default UTC)")
-    parser.add_argument("--next", type=int, default=3, dest="count", help="how many next runs to show")
+    parser.add_argument(
+        "--next", type=int, default=3, dest="count", help="how many next runs to show"
+    )
     parser.add_argument("--no-dst-check", action="store_true", help="skip DST warnings")
     parser.add_argument(
         "--between",
