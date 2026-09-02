@@ -84,34 +84,34 @@ def describe(expr):
         time_part = f"at {int(hour):02d}:{int(minute):02d}"
     else:
         bits = []
-        m = _field_phrase(minute, "minute")
-        h = _field_phrase(hour, "hour")
-        if m:
-            bits.append(m if not minute.isdigit() else f"at minute {minute}")
+        minute_phrase = _field_phrase(minute, "minute")
+        hour_phrase = _field_phrase(hour, "hour")
+        if minute_phrase:
+            bits.append(minute_phrase if not minute.isdigit() else f"at minute {minute}")
         else:
             bits.append("every minute")
-        if h:
+        if hour_phrase:
             bits.append(
-                f"past hour {h}"
+                f"past hour {hour_phrase}"
                 if hour.isdigit()
-                else f"during {h}"
-                if not h.startswith("every")
-                else h
+                else f"during {hour_phrase}"
+                if not hour_phrase.startswith("every")
+                else hour_phrase
             )
         time_part = ", ".join(bits)
 
     day_bits = []
-    d = _field_phrase(
+    weekday_phrase = _field_phrase(
         dow, "weekday", names=DOW[-1:] + DOW[:-1] + DOW[-1:]
     )  # cron: 0 and 7 = Sunday
-    if d:
-        day_bits.append(f"on {d}")
-    dm = _field_phrase(dom, "day of month")
-    if dm:
-        day_bits.append(f"on day {dm} of the month")
-    mo = _field_phrase(month, "month", names=[None] + MONTHS)
-    if mo:
-        day_bits.append(f"in {mo}")
+    if weekday_phrase:
+        day_bits.append(f"on {weekday_phrase}")
+    day_of_month_phrase = _field_phrase(dom, "day of month")
+    if day_of_month_phrase:
+        day_bits.append(f"on day {day_of_month_phrase} of the month")
+    month_phrase = _field_phrase(month, "month", names=[None] + MONTHS)
+    if month_phrase:
+        day_bits.append(f"in {month_phrase}")
     if not day_bits:
         day_bits.append("every day")
     return f"{time_part}, {' and '.join(day_bits)}"
@@ -122,15 +122,15 @@ def phrase_to_cron(phrase):
     into a 5-field cron expression, or return None if the phrase isn't recognized."""
     text = phrase.strip().lower()
 
-    m = _INTERVAL_RE.match(text)
-    if m:
-        n, unit = m.groups()
-        return f"*/{n} * * * *" if unit == "minute" else f"0 */{n} * * *"
+    interval_match = _INTERVAL_RE.match(text)
+    if interval_match:
+        every, unit = interval_match.groups()
+        return f"*/{every} * * * *" if unit == "minute" else f"0 */{every} * * *"
 
-    m = _AT_TIME_RE.search(text)
-    if not m:
+    time_match = _AT_TIME_RE.search(text)
+    if not time_match:
         return None
-    hour, minute, ampm = m.groups()
+    hour, minute, ampm = time_match.groups()
     hour, minute = int(hour), int(minute or 0)
     if ampm:
         ampm = ampm.lower()
@@ -141,31 +141,31 @@ def phrase_to_cron(phrase):
     if not (0 <= hour <= 23 and 0 <= minute <= 59):
         return None
 
-    prefix = text[: m.start()]
+    prefix = text[: time_match.start()]
     if "every weekday" in prefix:
         dow = "1-5"
     elif "every weekend" in prefix:
         dow = "6,0"
     else:
-        dow = next((str(n) for name, n in DOW_NUMS.items() if name in prefix), "*")
+        dow = next((str(num) for name, num in DOW_NUMS.items() if name in prefix), "*")
     return f"{minute} {hour} * * {dow}"
 
 
-def _parse_dt(s, zone):
+def _parse_dt(text, zone):
     """Parse an ISO 8601 datetime, defaulting to `zone` when it has no offset."""
-    dt = datetime.fromisoformat(s)
+    dt = datetime.fromisoformat(text)
     return dt if dt.tzinfo else dt.replace(tzinfo=zone)
 
 
 def runs_between(expr, start, end):
     """List every run of expr in [start, end], both tz-aware datetimes."""
-    it = croniter(expr, start)
+    schedule = croniter(expr, start)
     runs = []
     while True:
-        nxt = it.get_next(datetime)
-        if nxt > end:
+        run = schedule.get_next(datetime)
+        if run > end:
             break
-        runs.append(nxt)
+        runs.append(run)
     return runs
 
 
@@ -173,38 +173,38 @@ def dst_warnings(expr, tz, runs=DST_SCAN_RUNS):
     """Detect schedule times that get skipped or doubled by DST transitions."""
     warnings = []
     zone = ZoneInfo(tz)
-    it = croniter(expr, datetime.now(zone))
-    prev = None
+    schedule = croniter(expr, datetime.now(zone))
+    previous_run = None
     for _ in range(runs):
-        nxt = it.get_next(datetime)
-        if prev is not None and prev.utcoffset() != nxt.utcoffset():
+        run = schedule.get_next(datetime)
+        if previous_run is not None and previous_run.utcoffset() != run.utcoffset():
             warnings.append(
-                f"DST transition between {prev:%Y-%m-%d %H:%M %Z} and {nxt:%Y-%m-%d %H:%M %Z}: "
+                f"DST transition between {previous_run:%Y-%m-%d %H:%M %Z} and {run:%Y-%m-%d %H:%M %Z}: "
                 "a run may be skipped (spring forward) or duplicated (fall back)"
             )
-        prev = nxt
+        previous_run = run
     return warnings[:MAX_DST_WARNINGS]
 
 
 def main(argv=None):
     """CLI entry point: describe a cron expression and list its next runs."""
-    p = argparse.ArgumentParser(
+    parser = argparse.ArgumentParser(
         prog="cron-translate",
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    p.add_argument("expression", help="5-field cron expression (quote it)")
-    p.add_argument("--tz", default="UTC", help="IANA timezone for next runs (default UTC)")
-    p.add_argument("--next", type=int, default=3, dest="count", help="how many next runs to show")
-    p.add_argument("--no-dst-check", action="store_true", help="skip DST warnings")
-    p.add_argument(
+    parser.add_argument("expression", help="5-field cron expression (quote it)")
+    parser.add_argument("--tz", default="UTC", help="IANA timezone for next runs (default UTC)")
+    parser.add_argument("--next", type=int, default=3, dest="count", help="how many next runs to show")
+    parser.add_argument("--no-dst-check", action="store_true", help="skip DST warnings")
+    parser.add_argument(
         "--between",
         nargs=2,
         metavar=("START", "END"),
         help="list every run within [START, END] (ISO 8601, e.g. 2026-07-15T00:00)",
     )
-    p.add_argument("--json", action="store_true", help="emit machine-readable JSON")
-    args = p.parse_args(argv)
+    parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
+    args = parser.parse_args(argv)
 
     expr = args.expression.strip()
     if not croniter.is_valid(expr):
@@ -227,8 +227,8 @@ def main(argv=None):
         end = _parse_dt(args.between[1], zone)
         runs = runs_between(expr, start, end)
     else:
-        it = croniter(expr, datetime.now(zone))
-        runs = [it.get_next(datetime) for _ in range(args.count)]
+        schedule = croniter(expr, datetime.now(zone))
+        runs = [schedule.get_next(datetime) for _ in range(args.count)]
 
     warnings = dst_warnings(expr, args.tz) if not args.no_dst_check and args.tz != "UTC" else []
 
@@ -249,18 +249,18 @@ def main(argv=None):
     print(f"{expr}\n  → {describe(expr)}\n")
     if args.between:
         print(f"Runs between {start:%Y-%m-%d %H:%M %Z} and {end:%Y-%m-%d %H:%M %Z}: {len(runs)}")
-        for nxt in runs:
-            print(f"  {nxt:%Y-%m-%d %H:%M %Z}")
+        for run in runs:
+            print(f"  {run:%Y-%m-%d %H:%M %Z}")
     else:
         print(f"Next {args.count} runs ({args.tz}):")
-        for nxt in runs:
-            delta = nxt - datetime.now(zone)
+        for run in runs:
+            delta = run - datetime.now(zone)
             hours = delta / timedelta(hours=1)
             rel = f"in {delta.days}d" if delta.days else f"in {hours:.1f}h"
-            print(f"  {nxt:%Y-%m-%d %H:%M %Z}  ({rel})")
+            print(f"  {run:%Y-%m-%d %H:%M %Z}  ({rel})")
 
-    for w in warnings:
-        print(f"\n⚠ {w}")
+    for warning in warnings:
+        print(f"\n⚠ {warning}")
     return 0
 
 
