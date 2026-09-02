@@ -25,6 +25,12 @@ DOW_NUMS = {
     "saturday": 6,
     "sunday": 0,
 }
+# How far ahead dst_warnings walks the schedule, and how many transitions it
+# reports: a year of daily runs is enough to cross both DST boundaries, and
+# more than a few warnings is noise rather than information.
+DST_SCAN_RUNS = 100
+MAX_DST_WARNINGS = 3
+
 _INTERVAL_RE = re.compile(r"^every\s+(\d+)\s+(minute|hour)s?$", re.IGNORECASE)
 _AT_TIME_RE = re.compile(r"at\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?", re.IGNORECASE)
 MONTHS = [
@@ -163,7 +169,7 @@ def runs_between(expr, start, end):
     return runs
 
 
-def dst_warnings(expr, tz, runs=100):
+def dst_warnings(expr, tz, runs=DST_SCAN_RUNS):
     """Detect schedule times that get skipped or doubled by DST transitions."""
     warnings = []
     zone = ZoneInfo(tz)
@@ -177,7 +183,7 @@ def dst_warnings(expr, tz, runs=100):
                 "a run may be skipped (spring forward) or duplicated (fall back)"
             )
         prev = nxt
-    return warnings[:3]
+    return warnings[:MAX_DST_WARNINGS]
 
 
 def main(argv=None):
