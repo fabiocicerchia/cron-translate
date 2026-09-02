@@ -8,12 +8,15 @@ cron-translate '0 2 * * 0' --tz America/New_York   # warns about DST skips
 
 import argparse
 import json
+import logging
 import re
 import sys
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from croniter import croniter
+
+LOGGER = logging.getLogger("cron-translate")
 
 DOW = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 DOW_NUMS = {
@@ -257,6 +260,11 @@ def _render_text(args, expr, runs, window, warnings):
 
 def main(argv=None):
     """CLI entry point: describe a cron expression and list its next runs."""
+    # force=True so a second call in the same process (the tests) rebinds the
+    # handler to the current sys.stderr instead of silently reusing the first.
+    logging.basicConfig(
+        format="%(name)s: %(message)s", stream=sys.stderr, level=logging.INFO, force=True
+    )
     args = _build_parser().parse_args(argv)
 
     expr = args.expression.strip()
@@ -268,10 +276,7 @@ def main(argv=None):
             if args.json:
                 print(json.dumps({"error": f"invalid cron expression: {expr}"}))
             else:
-                print(
-                    f"cron-translate: invalid cron expression: {expr!r}",
-                    file=sys.stderr,
-                )
+                LOGGER.error("invalid cron expression: %r", expr)
             return 64
 
     zone = ZoneInfo(args.tz)

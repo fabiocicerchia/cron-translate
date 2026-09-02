@@ -24,6 +24,13 @@ def test_invalid_expression_exit_code():
     assert main(["not a cron"]) == 64
 
 
+def test_invalid_expression_diagnostic_goes_to_stderr(capsys):
+    assert main(["total nonsense"]) == 64
+    captured = capsys.readouterr()
+    assert captured.err.strip() == "cron-translate: invalid cron expression: 'total nonsense'"
+    assert captured.out == ""
+
+
 def test_cli_happy_path(capsys):
     assert main(["0 3 * * *", "--next", "1"]) == 0
     out = capsys.readouterr().out
