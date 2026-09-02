@@ -18,6 +18,11 @@ from croniter import croniter
 
 LOGGER = logging.getLogger("cron-translate")
 
+# sysexits(3): the only failure this tool detects itself is a usage error --
+# an expression that is neither valid cron nor a phrase it can translate.
+EXIT_OK = 0
+EXIT_USAGE = 64
+
 DOW = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 DOW_NUMS = {
     "monday": 1,
@@ -277,7 +282,7 @@ def main(argv=None):
                 print(json.dumps({"error": f"invalid cron expression: {expr}"}))
             else:
                 LOGGER.error("invalid cron expression: %r", expr)
-            return 64
+            return EXIT_USAGE
 
     zone = ZoneInfo(args.tz)
     runs, window = _collect_runs(args, expr, zone)
@@ -295,10 +300,10 @@ def main(argv=None):
                 }
             )
         )
-        return 0
+        return EXIT_OK
 
     _render_text(args, expr, runs, window, warnings)
-    return 0
+    return EXIT_OK
 
 
 if __name__ == "__main__":
