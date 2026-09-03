@@ -35,5 +35,10 @@ cron-translate = "cron_translate:main"
 [tool.setuptools]
 py-modules = ["cron_translate"]
 
+[tool.pytest.ini_options]
+# Without this, pytest inserts tests/ on sys.path and `import cron_translate`
+# resolves to an installed copy in site-packages instead of this checkout.
+pythonpath = ["."]
+
 [tool.ruff]
 line-length = 100
