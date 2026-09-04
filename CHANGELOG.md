@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/fabiocicerchia/cron-translate/compare/v0.2.1...v0.2.2) (2026-09-04)
+
+
+### Bug Fixes
+
+* **ci:** pin the editorconfig-checker binary version ([#65](https://github.com/fabiocicerchia/cron-translate/issues/65)) ([1c2360c](https://github.com/fabiocicerchia/cron-translate/commit/1c2360cf9097de1e9eac8013afdfe8548b72efe1))
+
 ## [0.2.1](https://github.com/fabiocicerchia/cron-translate/compare/v0.2.0...v0.2.1) (2026-08-29)
 
 
