@@ -4,7 +4,13 @@
 FROM python:3.14-slim@sha256:cad9a2c871761c413caa6fdd6441c783451e740a48aaeba60ae62a8b53525ef6 AS build
 WORKDIR /src
 COPY . .
-RUN pip install --no-cache-dir build && python -m build --wheel
+# The build backend comes from a hash-pinned lockfile and isolation is off, so
+# building the wheel fetches nothing. `pip wheel` on its own would still be
+# reported as pinned while PEP 517 isolation quietly downloaded setuptools
+# from PyPI -- Scorecard cannot see inside pip, which makes that a silenced
+# finding rather than a pinned build.
+RUN pip install --no-cache-dir --require-hashes -r requirements-build.txt \
+ && pip wheel --no-cache-dir --no-build-isolation --no-deps -w dist .
 
 # --- runtime stage ---
 FROM python:3.14-slim@sha256:cad9a2c871761c413caa6fdd6441c783451e740a48aaeba60ae62a8b53525ef6
@@ -12,7 +18,13 @@ WORKDIR /app
 # Run as non-root.
 RUN useradd -u 10001 -m app
 COPY --from=build /src/dist/*.whl /tmp/
-RUN pip install --no-cache-dir /tmp/*.whl && rm /tmp/*.whl
+COPY requirements-runtime.txt /tmp/requirements-runtime.txt
+# Runtime dependencies come from a hash-pinned lockfile, and the wheel
+# installs with --no-deps -- otherwise pip would resolve them itself,
+# unpinned, which is the hole a named-wheel install leaves open.
+RUN pip install --no-cache-dir --require-hashes -r /tmp/requirements-runtime.txt \
+ && pip install --no-cache-dir --no-deps /tmp/*.whl \
+ && rm /tmp/*.whl /tmp/requirements-runtime.txt
 USER app
 # hardener: run this image with `docker run --read-only` for a read-only rootfs
 
