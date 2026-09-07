@@ -11,6 +11,7 @@ import json
 import logging
 import re
 import sys
+from collections.abc import Sequence
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -66,13 +67,13 @@ def _plural(n: int, unit: str) -> str:
     return f"every {unit}" if n == 1 else f"every {n} {unit}s"
 
 
-def _field_phrase(field: str, unit: str, names: list[str] | None = None) -> str | None:
+def _field_phrase(field: str, unit: str, names: Sequence[str | None] | None = None) -> str | None:
     """Translate one cron field into a phrase, or None when it's '*'."""
     if field == "*":
         return None
     if field.startswith("*/"):
         return _plural(int(field[2:]), unit)
-    parts = []
+    parts: list[str] = []
     for chunk in field.split(","):
         if "/" in chunk:
             rng, step = chunk.split("/")
@@ -80,10 +81,15 @@ def _field_phrase(field: str, unit: str, names: list[str] | None = None) -> str 
         elif "-" in chunk:
             lo, hi = chunk.split("-")
             if names:
-                lo, hi = names[int(lo) % len(names)], names[int(hi) % len(names)]
+                # A number with no name in the table -- month 0, which cron does
+                # not have -- keeps its digits rather than vanishing from the
+                # sentence.
+                lo = names[int(lo) % len(names)] or lo
+                hi = names[int(hi) % len(names)] or hi
             parts.append(f"{lo} through {hi}")
         else:
-            parts.append(names[int(chunk) % len(names)] if names else chunk)
+            name = names[int(chunk) % len(names)] if names else None
+            parts.append(name or chunk)
     return " and ".join(parts)
 
 
@@ -91,7 +97,7 @@ def _time_phrase(minute: str, hour: str) -> str:
     """Render the minute and hour fields as the time-of-day half of the sentence."""
     if "*" not in (minute, hour) and minute.isdigit() and hour.isdigit():
         return f"at {int(hour):02d}:{int(minute):02d}"
-    bits = []
+    bits: list[str] = []
     minute_phrase = _field_phrase(minute, "minute")
     hour_phrase = _field_phrase(hour, "hour")
     if minute_phrase:
@@ -111,7 +117,7 @@ def _time_phrase(minute: str, hour: str) -> str:
 
 def _day_phrase(dom: str, month: str, dow: str) -> str:
     """Render the weekday, day-of-month and month fields as the day half."""
-    day_bits = []
+    day_bits: list[str] = []
     weekday_phrase = _field_phrase(dow, "weekday", names=DOW[-1:] + DOW[:-1] + DOW[-1:])  # cron: 0 and 7 = Sunday
     if weekday_phrase:
         day_bits.append(f"on {weekday_phrase}")
@@ -188,7 +194,7 @@ def _parse_dt(text: str, zone: ZoneInfo) -> datetime:
 def runs_between(expr: str, start: datetime, end: datetime) -> list[datetime]:
     """List every run of expr in [start, end], both tz-aware datetimes."""
     schedule = croniter(expr, start)
-    runs = []
+    runs: list[datetime] = []
     while True:
         run = schedule.get_next(datetime)
         if run > end:
@@ -199,7 +205,7 @@ def runs_between(expr: str, start: datetime, end: datetime) -> list[datetime]:
 
 def dst_warnings(expr: str, tz: str, runs: int = DST_SCAN_RUNS) -> list[str]:
     """Detect schedule times that get skipped or doubled by DST transitions."""
-    warnings = []
+    warnings: list[str] = []
     zone = ZoneInfo(tz)
     schedule = croniter(expr, datetime.now(zone))
     previous_run = None
