@@ -1,0 +1,54 @@
+.TH CRON\-TRANSLATE 1 "2026-09" "cron-translate" "User Commands"
+.SH NAME
+cron-translate \- cron expressions in human terms
+.SH SYNOPSIS
+.B cron-translate
+.I EXPRESSION
+.RI [ options ]
+.SH DESCRIPTION
+Explains a five-field cron expression in words, lists its next runs in a
+chosen timezone, and warns where daylight-saving transitions will skip or
+repeat one.
+.PP
+Quote the expression: most of them contain characters the shell would eat.
+.SH OPTIONS
+.TP
+.BI \-\-tz " ZONE"
+IANA timezone for the next runs (default UTC).
+.TP
+.BI \-\-next " N"
+How many next runs to show (default 3).
+.TP
+.B \-\-no\-dst\-check
+Skip the daylight-saving warnings.
+.TP
+.BI \-\-between " START END"
+List every run in the closed interval, ISO 8601, e.g.
+.BR 2026-07-15T00:00 .
+.TP
+.B \-\-json
+Machine-readable output.
+.SH EXIT STATUS
+.TP
+.B 0
+The expression was understood.
+.TP
+.B non-zero
+It was not a valid five-field expression.
+.SH EXAMPLES
+.PP
+Explain a business-hours schedule:
+.PP
+.RS
+.B cron-translate '*/15 9-17 * * 1-5'
+.RE
+.PP
+Next five runs in Rome, with DST warnings:
+.PP
+.RS
+.B cron-translate '0 3 * * *' \-\-tz Europe/Rome \-\-next 5
+.RE
+.SH SEE ALSO
+.BR crontab (5).
+Project documentation:
+https://github.com/fabiocicerchia/cron-translate
