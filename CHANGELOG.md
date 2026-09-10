@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/fabiocicerchia/cron-translate/compare/v0.2.2...v0.3.0) (2026-09-10)
+
+
+### Features
+
+* **packaging:** ship a man page with the wheel ([#81](https://github.com/fabiocicerchia/cron-translate/issues/81)) ([561d9a1](https://github.com/fabiocicerchia/cron-translate/commit/561d9a1e35b77990a1261859a00cc5a032c3be6c))
+
+
+### Bug Fixes
+
+* **release:** grant id-token on the job that calls the signing workflow ([#83](https://github.com/fabiocicerchia/cron-translate/issues/83)) ([d6f2b11](https://github.com/fabiocicerchia/cron-translate/commit/d6f2b11c68674a79005e04ea7e814ad8d5e1b947))
+
 ## [0.2.2](https://github.com/fabiocicerchia/cron-translate/compare/v0.2.1...v0.2.2) (2026-09-08)
 
 
