@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/fabiocicerchia/cron-translate/compare/v0.3.0...v0.3.1) (2026-09-11)
+
+
+### Bug Fixes
+
+* **release:** let the release PR carry a token that isn't GITHUB_TOKEN ([#86](https://github.com/fabiocicerchia/cron-translate/issues/86)) ([33c55b9](https://github.com/fabiocicerchia/cron-translate/commit/33c55b9d8a00bf8b2455616d0a0d2e7ede82659e))
+
 ## [0.3.0](https://github.com/fabiocicerchia/cron-translate/compare/v0.2.2...v0.3.0) (2026-09-10)
 
 
