@@ -274,3 +274,78 @@ def test_convert_rejects_an_unknown_dialect(capsys: pytest.CaptureFixture[str]) 
 def test_convert_describes_the_schedule_once(capsys: pytest.CaptureFixture[str]) -> None:
     assert main(["convert", "--from", "systemd", "--to", "quartz", "Mon..Fri *-*-* 09:00:00"]) == 0
     assert "At 09:00, Monday through Friday" in capsys.readouterr().out
+
+
+# --- regressions -----------------------------------------------------------
+
+
+def test_croniter_seconds_field_is_moved_to_the_front_for_the_description() -> None:
+    # croniter reads a sixth field as seconds after the weekday;
+    # cron-descriptor reads it as seconds first. Handed one as the other it
+    # described `0 12 * * 1 0` as "only on Sunday, only in January".
+    assert describe("0 12 * * 1 0", seconds_last=True) == "At 12:00, only on Monday"
+    assert describe("0 12 * * 1 30", seconds_last=True) == "At 12:00:30, only on Monday"
+    assert describe("0 12 * * 1 0 2027", seconds_last=True) == "At 12:00, only on Monday, only in 2027"
+
+
+def test_quartz_layout_is_left_alone() -> None:
+    assert describe("30 0 12 ? * 6#3 *", dow_index_zero=False) == "At 12:00:30, on the third Friday of the month"
+
+
+def test_cli_describes_a_six_field_expression_correctly(capsys: pytest.CaptureFixture[str]) -> None:
+    assert main(["0 12 * * 1 0", "--next", "1"]) == 0
+    assert "only on Monday" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize(
+    ("phrase", "unit"),
+    [("every 36 hours", "36h"), ("every 40 days", "40d"), ("every 18 months", "18months")],
+)
+def test_intervals_beyond_a_field_have_no_cron_answer(phrase: str, unit: str) -> None:
+    # `*/36` in a 0-23 field and `*/40` in a 1-31 one are accepted by croniter
+    # and mean something else entirely -- daily and "the 1st", respectively.
+    assert _translated(phrase).cron is None
+    assert f"OnUnitActiveSec={unit}" in _note(phrase)
+
+
+def test_an_interval_that_does_not_tile_a_day_offers_no_crontab_lines() -> None:
+    # 2880 minutes is two days: no set of crontab entries repeats it.
+    assert _translated("every 2880 minutes").cron is None
+    assert "none of its fields can count 2880 minutes" in _note("every 2880 minutes")
+
+
+@pytest.mark.parametrize(
+    ("phrase", "expected"),
+    [("every 24 hours", "0 0 * * *"), ("every 12 months", "0 0 1 1 *"), ("every 90 minutes", None)],
+)
+def test_interval_boundaries(phrase: str, expected: str | None) -> None:
+    assert _translated(phrase).cron == expected
+
+
+def test_every_translated_phrase_is_valid_cron() -> None:
+    phrases = [
+        f"every {n} {unit}"
+        for n in (1, 2, 3, 7, 12, 24, 36, 40, 59, 60, 90, 2880)
+        for unit in ("minutes", "hours", "days", "weeks", "months")
+    ]
+    for phrase in phrases:
+        cron = _translated(phrase).cron
+        assert cron is None or croniter.is_valid(cron), f"{phrase} -> {cron}"
+
+
+def test_the_cli_reads_the_day_fields_the_way_the_crontab_will(capsys: pytest.CaptureFixture[str]) -> None:
+    # croniter's default ORs the day fields; the crontab on the box ANDs them
+    # when either is written with a star. The CLI has to agree with the box.
+    assert main(["0 9 */10 * 1-5", "--between", "2026-09-12T00:00", "2026-11-30T00:00"]) == 0
+    out = capsys.readouterr().out
+    assert "2026-09-21" in out  # the 21st, and a Monday
+    assert "2026-11-01" not in out  # the 1st, but a Sunday
+    assert "2026-09-14" not in out  # a Monday, but not a 1st/11th/21st/31st
+    assert "Runs between 2026-09-12 00:00 UTC and 2026-11-30 00:00 UTC: 4" in out
+
+
+def test_a_day_rule_without_a_star_still_ors(capsys: pytest.CaptureFixture[str]) -> None:
+    assert main(["0 9 1 * 1", "--between", "2026-09-12T00:00", "2026-09-30T00:00"]) == 0
+    out = capsys.readouterr().out
+    assert "2026-09-14" in out  # a Monday
+    assert "2026-09-21" in out  # a Monday

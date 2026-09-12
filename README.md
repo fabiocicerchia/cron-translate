@@ -16,7 +16,7 @@ you your 02:30 job silently won't run on the night the clocks jump.
 ```console
 $ cron-translate '*/15 9-17 * * 1-5'
 */15 9-17 * * 1-5
-  → every 15 minutes, during 9 through 17, on Monday through Friday
+  → Every 15 minutes, between 09:00 and 17:59, Monday through Friday
 
 Next 3 runs (UTC):
   2026-07-10 14:15 UTC  (in 0.2h)
@@ -24,8 +24,8 @@ Next 3 runs (UTC):
 
 $ cron-translate '30 2 * * *' --tz America/New_York
 ...
-⚠ DST transition between 2027-03-13 02:30 EST and 2027-03-14 03:30 EDT:
-  a run may be skipped (spring forward) or duplicated (fall back)
+  2027-03-14 03:00 EDT  ⚠ DST: this wall-clock time does not exist (spring
+                          forward) — the run is skipped or shifted
 ```
 
 ## Install
@@ -126,9 +126,12 @@ so and exits non-zero.
   do not. `30 0 12 ? * MON-FRI *` → vixie is exit 65, with `0 12 * * 1-5`
   offered as the closest expression and labelled *not equivalent*.
 - **day-of-month vs day-of-week.** Cron fires when **either** matches once both
-  are restricted. EventBridge and Quartz cannot write that at all — they
-  require `?` in exactly one of the two — and systemd means **and**, not
-  **or**. All three directions are refused rather than silently re-read.
+  are restricted — unless either field is *written* with a star, `*/10`
+  included, in which case it ANDs them. (That is real Vixie/ISC behaviour;
+  croniter calls it the cron bug. Both halves of this tool model it.)
+  EventBridge and Quartz cannot write the OR reading at all — they require `?`
+  in exactly one of the two — and systemd always ANDs. Each direction is
+  refused rather than silently re-read.
 - **`?` becomes `*`.** Going the other way is lossless but worth saying, so a
   caveat says it.
 - **`L`, `W`, `#`.** Quartz says all of them; EventBridge takes `L` and `W` and

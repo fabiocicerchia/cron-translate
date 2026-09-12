@@ -28,9 +28,26 @@ Five fields, `minute hour day-of-month month day-of-week`.
 `@hourly` are expanded on the way in. `@reboot` is rejected: it is not a
 calendar schedule, so it has no next run and no equivalent anywhere.
 
-When **both** day fields are restricted, vixie fires when **either** matches.
-That is the single most-misread rule in cron, and it is why `0 0 15-21 * 5` is
-not "the third Friday".
+When both day fields are restricted, vixie fires when **either** matches. That
+is the single most-misread rule in cron, and it is why `0 0 15-21 * 5` is not
+"the third Friday".
+
+The rule keys off the literal `*`, not off how many values a field matches. If
+either day field is *written* with a star — `*/10` counts — vixie ANDs the two
+instead:
+
+| Expression | Reading |
+|---|---|
+| `0 9 1 * 1` | the 1st **or** any Monday |
+| `0 9 */10 * 1-5` | the 1st, 11th, 21st and 31st, **and** only when a weekday |
+| `0 9 1 * 0-7` | the 1st **or** any day — so every day, because `0-7` is every day yet is not a star |
+
+croniter calls this the cron bug and hides it behind `implement_cron_bug`;
+Vixie cron, ISC cron and Debian's cron all behave this way, so cron-translate
+models it — in `convert` and in the plain `cron-translate EXPRESSION` next-run
+times alike. If you have compared this tool against a library that reports
+`0 9 */10 * 1-5` as "every tenth day or every weekday", that is the
+disagreement, and the crontab on the box sides with this tool.
 
 ## Kubernetes CronJob
 
@@ -96,9 +113,10 @@ accepted.
 Two things set it apart from every cron dialect:
 
 - the weekday is **ANDed** with the date. `Mon *-*-01` is "the 1st, when the
-  1st is a Monday" — not "every Monday and every 1st". A cron expression that
-  restricts both day fields therefore has no `OnCalendar=` equivalent, and
-  vice versa.
+  1st is a Monday" — not "every Monday and every 1st". A cron expression whose
+  two day fields are ORed therefore has no `OnCalendar=` equivalent, and vice
+  versa. A cron expression that ANDs them because one field carries a star
+  (`0 9 */10 * 1-5`) converts fine.
 - it carries its own timezone as a suffix.
 
 `W` (nearest weekday) and `#` (nth weekday) have no systemd spelling at all.
@@ -114,8 +132,9 @@ Two things set it apart from every cron dialect:
 | `W` (nearest weekday) | vixie, k8s, systemd | exit 65 |
 | a restricted year | vixie, k8s | exit 65 |
 | a year past 2099 | quartz | exit 65 |
-| both day fields restricted (cron OR) | eventbridge, quartz, systemd | exit 65 |
-| weekday ANDed with a date (systemd) | every cron dialect | exit 65 |
+| both day fields restricted | eventbridge, quartz | exit 65 — neither can leave both without a `?` |
+| both day fields restricted and ORed (no star) | systemd | exit 65 — `OnCalendar=` only ANDs |
+| weekday ANDed with a date (systemd) | cron dialects, where the rendering would OR | exit 65 |
 | `/` in day-of-week | eventbridge | exit 65 |
 | `#` alongside other day-of-week terms | eventbridge | exit 65 |
 

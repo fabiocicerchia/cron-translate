@@ -53,6 +53,9 @@ MONTHS_PER_YEAR = 12
 DST_SCAN_RUNS = 100
 MAX_DST_WARNINGS = 3
 DEFAULT_RUNS = 3
+# Field counts at which croniter's sixth field is seconds (and its seventh,
+# if present, the year).
+CRONITER_SECONDS_FIELDS = (6, 7)
 
 SKIPPED = "DST: this wall-clock time does not exist (spring forward) — the run is skipped or shifted"
 DOUBLED = "DST: this wall-clock time happens twice (fall back) — the run may fire twice"
@@ -71,19 +74,35 @@ _ORDINALS = {"first": 1, "second": 2, "third": 3, "fourth": 4, "fifth": 5}
 # --- describing ------------------------------------------------------------
 
 
-def describe(expr: str, *, dow_index_zero: bool = True) -> str:
+def _seconds_first(expr: str) -> str:
+    """Move croniter's trailing seconds field to the front.
+
+    croniter reads a sixth field as seconds *after* the weekday, and a seventh
+    as the year; cron-descriptor reads the Quartz layout, seconds first. Handed
+    one as the other, it silently describes the wrong schedule — `0 12 * * 1 0`
+    comes back as "only on Sunday, only in January".
+    """
+    fields = expr.split()
+    if len(fields) not in CRONITER_SECONDS_FIELDS:
+        return expr
+    minute, hour, dom, month, dow, second, *year = fields
+    return " ".join([second, minute, hour, dom, month, dow, *year])
+
+
+def describe(expr: str, *, dow_index_zero: bool = True, seconds_last: bool = False) -> str:
     """Render a cron expression as a human-readable sentence.
 
     The wording comes from cron-descriptor, which already knows every corner
     of the grammar — `L`, `W`, `#`, seconds, years — in a dozen languages.
     `dow_index_zero` is False for the dialects that number Sunday 1 (Quartz,
-    EventBridge) rather than 0.
+    EventBridge) rather than 0. `seconds_last` is True for expressions written
+    in croniter's layout rather than Quartz's.
     """
     options = Options()
     options.use_24hour_time_format = True
     options.day_of_week_start_index_zero = dow_index_zero
     try:
-        return ExpressionDescriptor(expr, options).get_description()
+        return ExpressionDescriptor(_seconds_first(expr) if seconds_last else expr, options).get_description()
     except Exception:
         # A description is a nicety; never fail a run over one.
         return expr
@@ -139,10 +158,21 @@ def _weekday_field(prefix: str) -> str:
     return next((str(num) for name, num in DOW_NUMS.items() if name in prefix), "*")
 
 
+def _beyond_cron(label: str, unit: str) -> Translation:
+    """An interval no crontab entry repeats, however the fields are arranged."""
+    return Translation(
+        None,
+        f"cron repeats inside a field, and none of its fields can count {label}: there is no crontab entry "
+        f"for it, exact or otherwise. A systemd timer says it directly — `OnUnitActiveSec={unit}` — counting "
+        "from the last run; otherwise the job has to keep its own timestamp and exit early.",
+        exact=False,
+    )
+
+
 def _minute_interval(every: int) -> Translation:
-    if every <= MINUTE_MAX and MINUTES_PER_HOUR % every == 0:
-        return Translation(f"*/{every} * * * *")
     if every <= MINUTE_MAX:
+        if MINUTES_PER_HOUR % every == 0:
+            return Translation(f"*/{every} * * * *")
         return Translation(
             f"*/{every} * * * *",
             f"cron's `*/{every}` restarts at the top of every hour, so the gap across :00 is "
@@ -151,12 +181,13 @@ def _minute_interval(every: int) -> Translation:
             exact=False,
         )
     lines = _interval_lines(every)
-    closest = "; ".join(lines) if lines else f"0 */{max(1, round(every / MINUTES_PER_HOUR))} * * *"
+    if not lines:
+        return _beyond_cron(f"{every} minutes", f"{every}min")
     return Translation(
         None,
         f"cron's minute field stops at 59, so `every {every} minutes` is not one crontab entry. "
-        f"Closest: {closest}. A systemd timer says it directly — `OnUnitActiveSec={every}min` — and it "
-        "counts from the last run rather than from the top of the hour.",
+        f"Closest: {'; '.join(lines)}. A systemd timer says it directly — `OnUnitActiveSec={every}min` — and "
+        "it counts from the last run rather than from the top of the hour.",
         exact=False,
     )
 
@@ -172,6 +203,12 @@ def _interval_lines(every: int) -> list[str]:
 
 
 def _hour_interval(every: int) -> Translation:
+    if every == HOURS_PER_DAY:
+        return Translation("0 0 * * *")
+    if every > HOURS_PER_DAY:
+        # 36 hours alternates midnight and noon on alternating days: cron has
+        # no field that counts days two at a time against the clock.
+        return _beyond_cron(f"{every} hours", f"{every}h")
     if HOURS_PER_DAY % every == 0:
         return Translation(f"0 */{every} * * *")
     return Translation(
@@ -185,11 +222,15 @@ def _hour_interval(every: int) -> Translation:
 def _day_interval(every: int) -> Translation:
     if every == 1:
         return Translation("0 0 * * *")
+    if every > dialects.DOM_MAX:
+        # `*/40` in a 1-31 field matches nothing past the 1st, so cron would
+        # quietly turn "every 40 days" into "the 1st of every month".
+        return _beyond_cron(f"{every} days", f"{every}d")
     return Translation(
         f"0 0 */{every} * *",
         f"cron's day-of-month step restarts on the 1st of every month, so `*/{every}` fires on the 1st "
         f"of each month regardless — the gap across a month boundary is not {every} days. A systemd timer "
-        f"(`OnUnitActiveSec={every}d`) or an `@reboot`-style state file is the only exact answer.",
+        f"(`OnUnitActiveSec={every}d`) or a job that keeps its own timestamp is the only exact answer.",
         exact=False,
     )
 
@@ -210,6 +251,10 @@ def _week_interval(every: int, dow: str) -> Translation:
 def _month_interval(every: int) -> Translation:
     if every == 1:
         return Translation("0 0 1 * *")
+    if every == MONTHS_PER_YEAR:
+        return Translation("0 0 1 1 *")
+    if every > MONTHS_PER_YEAR:
+        return _beyond_cron(f"{every} months", f"{every}months")
     if MONTHS_PER_YEAR % every == 0:
         return Translation(f"0 0 1 */{every} *")
     return Translation(
@@ -306,9 +351,22 @@ def _parse_dt(text: str, zone: ZoneInfo) -> datetime:
     return dt if dt.tzinfo else dt.replace(tzinfo=zone)
 
 
+def _schedule(expr: str, start: datetime) -> croniter:
+    """A croniter reading `expr` the way the crontab on the box will read it.
+
+    `implement_cron_bug` is croniter's name for what Vixie and ISC cron
+    actually do: day-of-month and day-of-week are ANDed, not ORed, whenever
+    either field is written with a star. Without it `0 0 */10 * 1-5` is
+    reported as "every tenth day or every weekday" when the machine will run
+    it on the 1st, 11th, 21st and 31st only, and then only on weekdays. It is
+    also the rule `convert` models, so both halves of this tool agree.
+    """
+    return croniter(expr, start, implement_cron_bug=True)
+
+
 def runs_between(expr: str, start: datetime, end: datetime) -> list[datetime]:
     """List every run of expr in [start, end], both tz-aware datetimes."""
-    schedule = croniter(expr, start)
+    schedule = _schedule(expr, start)
     runs: list[datetime] = []
     while True:
         run = schedule.get_next(datetime)
@@ -322,7 +380,7 @@ def dst_warnings(expr: str, tz: str, runs: int = DST_SCAN_RUNS) -> list[str]:
     """Detect schedule times that get skipped or doubled by DST transitions."""
     warnings: list[str] = []
     zone = ZoneInfo(tz)
-    schedule = croniter(expr, datetime.now(zone))
+    schedule = _schedule(expr, datetime.now(zone))
     previous_run = None
     for _ in range(runs):
         run = schedule.get_next(datetime)
@@ -413,7 +471,7 @@ def _collect_runs(
         start = _parse_dt(args.between[0], zone)
         end = _parse_dt(args.between[1], zone)
         return runs_between(expr, start, end), (start, end)
-    schedule = croniter(expr, datetime.now(zone))
+    schedule = _schedule(expr, datetime.now(zone))
     return [schedule.get_next(datetime) for _ in range(args.count)], None
 
 
@@ -435,7 +493,7 @@ def _render_text(args: argparse.Namespace, report: Report) -> str:
     Returns the text rather than printing it, so a test can read the report
     without going through capsys and main has one place that writes to stdout.
     """
-    lines = [f"{report.expr}\n  → {describe(report.expr)}\n"]
+    lines = [f"{report.expr}\n  → {describe(report.expr, seconds_last=True)}\n"]
     if report.translation and report.translation.note:
         lines.append(f"⚠ {report.translation.note}\n")
     if report.window:
@@ -458,7 +516,7 @@ def _render_json(args: argparse.Namespace, report: Report) -> str:
     return json.dumps(
         {
             "expression": report.expr,
-            "description": describe(report.expr),
+            "description": describe(report.expr, seconds_last=True),
             "tz": args.tz,
             "runs": [run.isoformat() for run in report.runs],
             "run_dst": report.notes,

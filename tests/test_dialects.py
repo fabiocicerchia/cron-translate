@@ -14,7 +14,7 @@ from cron_dialects import (
     next_runs,
     resolve,
 )
-from cron_translate import DOUBLED, SKIPPED, dst_notes
+from cron_translate import DOUBLED, SKIPPED, describe_schedule, dst_notes
 
 UTC = ZoneInfo("UTC")
 NEW_YORK = ZoneInfo("America/New_York")
@@ -209,7 +209,9 @@ def test_year_field_limits_the_walk() -> None:
 
 
 def test_systemd_repetition_round_trips() -> None:
-    assert convert("*-*-* 00/6:00:00", "systemd", "quartz").target_expr == "0 0 0/6 * * ? *"
+    # The hour range is spelled out rather than left as Quartz's `0/6`, so the
+    # same text is valid in the five-field dialects too.
+    assert convert("*-*-* 00/6:00:00", "systemd", "quartz").target_expr == "0 0 0-23/6 * * ? *"
 
 
 def test_systemd_last_day_uses_tilde() -> None:
@@ -254,3 +256,109 @@ def test_repeated_hour_is_reported_as_doubled() -> None:
 
 def test_utc_never_flags_a_run() -> None:
     assert _notes("0 30 2 * * ? *", "quartz", datetime(2027, 3, 12, tzinfo=UTC), 4) == [None] * 4
+
+
+# --- regressions -----------------------------------------------------------
+
+
+def test_systemd_time_field_is_not_mistaken_for_a_timezone() -> None:
+    # `*:0/15:00` contains a slash, and a loose zone test swallowed the whole
+    # time field -- turning "every 15 minutes" into "daily at midnight".
+    schedule = resolve("systemd").parse("*-*-* *:0/15:00")
+    assert schedule.tz is None
+    assert convert("*-*-* *:0/15:00", "systemd", "vixie").target_expr == "0-59/15 * * * *"
+
+
+def test_real_timezone_suffix_still_parses() -> None:
+    assert resolve("systemd").parse("Mon..Fri *-*-* 09:00:00 Europe/Rome").tz == "Europe/Rome"
+    assert resolve("systemd").parse("*-*-* 09:00:00 UTC").tz == "UTC"
+
+
+def test_stepped_weekday_is_not_dropped_by_systemd() -> None:
+    assert convert("0 0 * * */2", "vixie", "systemd").target_expr == "Sun,Tue,Thu,Sat *-*-* 00:00:00"
+
+
+def test_open_ended_weekday_step_keeps_its_step_in_systemd() -> None:
+    assert convert("0 0 0 ? * 2/2", "quartz", "systemd").target_expr == "Mon,Wed,Fri *-*-* 00:00:00"
+
+
+@pytest.mark.parametrize("expr", ["0 0 * * 0-7", "0 0 * * 0-6"])
+def test_whole_week_range_covers_every_day(expr: str) -> None:
+    # Reducing both ends modulo 7 first collapsed `0-7` to "Sunday to Sunday".
+    assert convert(expr, "vixie", "quartz").target_expr == "0 0 0 ? * 1-7 *"
+    assert len({run.strftime("%A") for run in next_runs(resolve("vixie").parse(expr), CLOCK, 7)}) == 7
+
+
+def test_whole_week_range_is_still_a_restricted_field() -> None:
+    # cron's OR rule keys off the literal `*`, not off the set of days: with
+    # day-of-month restricted too, `0-7` makes the entry fire every day. Turning
+    # it into `*` would have made it fire only on the 1st.
+    assert _days("0 9 1 * 0-7", "vixie", count=3) == ["2026-09-12", "2026-09-13", "2026-09-14"]
+    assert _days("0 9 1 * *", "vixie", count=2) == ["2026-10-01", "2026-11-01"]
+
+
+def test_wrapping_weekday_range_keeps_its_step() -> None:
+    # FRI-MON stepping by two is Friday and Sunday, not all four days.
+    assert convert("0 9 * * 5-1/2", "vixie", "quartz").target_expr == "0 0 9 ? * 6,1 *"
+    assert convert("0 9 * * 5-1/2", "vixie", "systemd").target_expr == "Fri,Sun *-*-* 09:00:00"
+
+
+def test_wrapping_weekday_range_without_a_step() -> None:
+    assert convert("0 0 * * 5-1", "vixie", "eventbridge").target_expr == "0 0 ? * 6,7,1,2 *"
+
+
+def test_open_ended_step_renders_as_a_range_for_five_field_dialects() -> None:
+    # `5/10` is Quartz's spelling; vixie only documents a step after a range
+    # or a star, so the range is spelled out.
+    assert convert("0 0 0 5/10 * ? *", "quartz", "vixie").target_expr == "0 0 5-31/10 * *"
+
+
+def test_a_year_past_the_quartz_ceiling_is_still_describable() -> None:
+    # `describable` must not inherit Quartz's 2099 limit: cron-descriptor has
+    # no such limit, and the caller only wants a layout it can read.
+    assert "2150" in describe_schedule(resolve("eventbridge").parse("0 9 ? * 2-6 2150"))
+
+
+# --- cron's day rule: the star, not the set of days ------------------------
+
+
+def test_star_step_day_of_month_ands_rather_than_ors() -> None:
+    # Vixie and ISC cron AND the two day fields whenever either is written
+    # with a star, `*/10` included. Reading this as OR puts a run on every
+    # weekday as well as every tenth day.
+    # The 1st, 11th, 21st and 31st that are also weekdays: the 21st (Mon),
+    # 1 Oct (Thu), 21 Oct (Wed), 11 Nov (Wed). No 31 September, and 1 Nov is
+    # a Sunday, so both are skipped.
+    assert _days("0 9 */10 * 1-5", "vixie", count=4) == ["2026-09-21", "2026-10-01", "2026-10-21", "2026-11-11"]
+
+
+def test_no_star_still_ors() -> None:
+    assert _days("0 9 1 * 1", "vixie", count=3) == ["2026-09-14", "2026-09-21", "2026-09-28"]
+
+
+def test_full_week_day_of_week_against_a_star_step() -> None:
+    # `1-7` matches every day but is not a star, so the star in day-of-month
+    # decides: the 1st, 11th, 21st and 31st, every one of which is some day of
+    # the week.
+    assert _days("0 9 */10 * 1-7", "vixie", count=4) == ["2026-09-21", "2026-10-01", "2026-10-11", "2026-10-21"]
+
+
+def test_full_week_day_of_week_without_a_star_ors_to_every_day() -> None:
+    assert _days("0 9 1 * 0-7", "vixie", count=3) == ["2026-09-12", "2026-09-13", "2026-09-14"]
+
+
+def test_a_starred_day_field_makes_systemd_reachable() -> None:
+    # Under the star rule this vixie entry already means AND, which is the
+    # only thing `OnCalendar=` can say -- so it converts instead of refusing.
+    assert convert("0 9 */10 * 1-5", "vixie", "systemd").target_expr == "Mon..Fri *-*-01/10 09:00:00"
+
+
+def test_without_a_star_systemd_still_refuses() -> None:
+    with pytest.raises(NotExpressibleError, match="OR"):
+        convert("0 9 1 * 1-5", "vixie", "systemd")
+
+
+def test_horizon_reaches_far_enough_for_a_sparse_schedule() -> None:
+    # A leap-day schedule needs four years per run; a five-year horizon
+    # silently returned two of the three asked for.
+    assert _days("0 0 0 29 2 ? *", "quartz", count=3) == ["2028-02-29", "2032-02-29", "2036-02-29"]

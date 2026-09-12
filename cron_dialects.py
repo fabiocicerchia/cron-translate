@@ -149,9 +149,12 @@ SUNDAY = 0
 # runs further out. Each dialect narrows this in its own spec.
 YEAR_MIN = 1970
 YEAR_MAX = 2199
-# Five years of days is far enough to find the next few runs of anything that
-# fires at all -- 29 February in a leap year is the sparsest realistic case.
-HORIZON_DAYS = 366 * 5
+# How far `next_runs` will walk before giving up. A yearly schedule needs a
+# year per run and 29 February needs four, so a few years is not enough for a
+# `--next 10`; a century is, and the walk costs a set lookup per day, so the
+# pathological case (an expression that never fires, like 30 February) still
+# finishes in milliseconds.
+HORIZON_DAYS = 366 * 100
 
 
 @dataclass(frozen=True)
@@ -287,6 +290,13 @@ def _parse_term(chunk: str, spec: FieldSpec) -> Term:
     lo = _value(lo_text, spec)
     hi = _value(hi_text, spec) if dash else None
     if spec.kind == DAY_OF_WEEK:
+        # `0-7` in vixie names Sunday at both ends once each is reduced modulo
+        # 7, which would collapse the whole week to a single day. It stays a
+        # span rather than becoming `*`: cron's OR rule keys off the literal
+        # star, so `0-7` is a *restricted* field that happens to match every
+        # day -- `0 9 1 * 0-7` fires daily, not only on the 1st.
+        if hi is not None and hi - lo == DAYS_IN_WEEK:
+            return Span(0, DAYS_IN_WEEK - 1, step)
         lo = _normalise_dow(lo, spec)
         hi = None if hi is None else _normalise_dow(hi, spec)
     return Span(lo, hi, step)
@@ -382,18 +392,57 @@ def _dow_matches(terms: tuple[Term, ...], day: date) -> bool:
     return False
 
 
-def _dow_span_matches(weekday: int, term: Span) -> bool:
+def _dow_span_days(term: Span) -> tuple[int, ...]:
+    """Every weekday a span covers, wrap and step included.
+
+    The matcher and both renderers share this: a wrapping range that keeps its
+    step in one place and drops it in another is a conversion that quietly
+    disagrees with itself.
+    """
     if term.hi is None:
-        return _in_span(weekday, term, DAYS_IN_WEEK - 1)
+        stop = term.lo if term.step == 1 else DAYS_IN_WEEK - 1
+        return tuple(range(term.lo, stop + 1, term.step))
     if term.lo <= term.hi:
-        return _in_span(weekday, term, DAYS_IN_WEEK - 1)
-    # FRI-MON wraps through Sunday; cron reads it as two spans, not as empty.
-    return weekday >= term.lo or weekday <= term.hi
+        return tuple(range(term.lo, term.hi + 1, term.step))
+    # FRI-MON wraps through Sunday; cron reads it as one run of days, and the
+    # step counts along that run rather than restarting at Sunday.
+    wrapped = list(range(term.lo, DAYS_IN_WEEK)) + list(range(term.hi + 1))
+    return tuple(wrapped[:: term.step])
+
+
+def _dow_span_matches(weekday: int, term: Span) -> bool:
+    return weekday in _dow_span_days(term)
 
 
 def is_open(field: Field) -> bool:
     """True when the field places no restriction — ``?`` or a bare ``*``."""
     return field is None or any(isinstance(term, Every) and term.step == 1 for term in field)
+
+
+def has_star(field: Field) -> bool:
+    """True when the field was written with a ``*``, step or no step.
+
+    Vixie cron's day rule keys off the literal star rather than off how many
+    values the field matches, and `*/10` raises the same flag `*` does.
+    """
+    return field is None or any(isinstance(term, Every) for term in field)
+
+
+def cron_day_match(schedule: Schedule) -> str:
+    """How a cron dialect reads this schedule's two day fields.
+
+    Cron ORs day-of-month against day-of-week only when *neither* was written
+    with a star. `0 0 */10 * 1-5` is "the 1st, 11th, 21st and 31st, when they
+    are weekdays" — not "every tenth day or every weekday". croniter calls
+    this the cron bug and hides it behind `implement_cron_bug`; it is what
+    Vixie and ISC cron actually do, so it is what this model does.
+    """
+    return "and" if has_star(schedule.dom) or has_star(schedule.dow) else "or"
+
+
+def effective_day_match(schedule: Schedule) -> str:
+    """How this schedule's two day fields combine, in its own dialect."""
+    return "and" if schedule.day_match == "and" else cron_day_match(schedule)
 
 
 def _day_matches(schedule: Schedule, day: date) -> bool:
@@ -405,7 +454,7 @@ def _day_matches(schedule: Schedule, day: date) -> bool:
     if dow_open:
         return _dom_matches(schedule.dom or (), day)
     both = (_dom_matches(schedule.dom or (), day), _dow_matches(schedule.dow or (), day))
-    return any(both) if schedule.day_match == "or" else all(both)
+    return all(both) if effective_day_match(schedule) == "and" else any(both)
 
 
 def matches(schedule: Schedule, moment: datetime) -> bool:
@@ -475,7 +524,10 @@ def _render_span(term: Span, spec: FieldSpec) -> str:
     shift = spec.name_base if spec.kind == DAY_OF_WEEK else 0
     lo = term.lo + shift
     if term.hi is None:
-        return f"{lo}/{term.step}" if term.step > 1 else str(lo)
+        # `0/15` is Quartz's spelling of "from 0, every 15". Vixie cron only
+        # documents a step after a range or a star, so spell the range out --
+        # `0-59/15` means the same thing and every dialect reads it.
+        return f"{lo}-{spec.high}/{term.step}" if term.step > 1 else str(lo)
     hi = term.hi + shift
     text = f"{lo}-{hi}"
     return f"{text}/{term.step}" if term.step > 1 else text
@@ -483,8 +535,7 @@ def _render_span(term: Span, spec: FieldSpec) -> str:
 
 def _expand_wrapping_dow(term: Span, spec: FieldSpec) -> str:
     """FRI-MON as a comma list: not every dialect reads a wrapping range."""
-    days = list(range(term.lo, DAYS_IN_WEEK)) + list(range((term.hi or 0) + 1))
-    return ",".join(str(_denormalise_dow(d, spec)) for d in days)
+    return ",".join(str(_denormalise_dow(day, spec)) for day in _dow_span_days(term))
 
 
 def _render_term(term: Term, spec: FieldSpec) -> str:
@@ -707,8 +758,14 @@ def _parse_systemd_field(text: str, spec: FieldSpec) -> tuple[Term, ...]:
     return tuple(_parse_systemd_term(chunk, spec) for chunk in text.split(","))
 
 
+# An IANA zone name: alphanumeric components separated by "/", starting with a
+# letter. Deliberately strict -- a time field like `*:0/15:00` also contains a
+# slash, and mistaking one for a zone drops the whole schedule silently.
+_ZONE_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_+-]*(?:/[A-Za-z0-9_+-]+)+$")
+
+
 def _looks_like_zone(token: str) -> bool:
-    return ("/" in token and not token[0].isdigit()) or token.upper() in {"UTC", "LOCAL"}
+    return bool(_ZONE_RE.match(token)) or token.upper() in {"UTC", "LOCAL"}
 
 
 def _looks_like_dow(token: str) -> bool:
@@ -795,8 +852,8 @@ STAR_TO_QUESTION_CAVEAT = (
     "`*` in both day fields is not legal in this dialect: day-of-week is written `?`, which means the same thing."
 )
 OR_VS_AND_CAVEAT = (
-    "cron ORs day-of-month against day-of-week when both are restricted; "
-    "systemd ANDs them. Only one of the two day fields is restricted here, so the readings agree."
+    "cron ORs day-of-month against day-of-week only when both are restricted and neither is written with a "
+    "star; systemd always ANDs them. This schedule falls on the side where the two readings agree."
 )
 
 
@@ -824,10 +881,13 @@ def _reject_year(schedule: Schedule, dialect: str) -> None:
 
 
 def _reject_and_semantics(schedule: Schedule, dialect: str) -> None:
-    if schedule.day_match == "and" and not is_open(schedule.dom) and not is_open(schedule.dow):
+    """Refuse a systemd AND that the target's own day rule would read as OR."""
+    if is_open(schedule.dom) or is_open(schedule.dow):
+        return
+    if effective_day_match(schedule) == "and" and cron_day_match(schedule) == "or":
         raise NotExpressibleError(
             f"systemd ANDs the weekday against the date, and {dialect} ORs them when both day fields are "
-            "restricted. No single expression carries the systemd meaning."
+            "restricted and neither is written with a star. No single expression carries the systemd meaning."
         )
 
 
@@ -856,7 +916,7 @@ def _day_caveats(schedule: Schedule) -> list[str]:
     caveats: list[str] = []
     if schedule.dom is None or schedule.dow is None:
         caveats.append(QUESTION_MARK_CAVEAT)
-    if schedule.day_match == "and" and (is_open(schedule.dom) or is_open(schedule.dow)):
+    if schedule.day_match == "and" and effective_day_match(schedule) == "and":
         caveats.append(OR_VS_AND_CAVEAT)
     return caveats
 
@@ -940,12 +1000,12 @@ def render_eventbridge(schedule: Schedule) -> tuple[str, tuple[str, ...]]:
     return text, tuple(caveats)
 
 
-def render_quartz(schedule: Schedule) -> tuple[str, tuple[str, ...]]:
-    """Render as a seven-field Quartz expression."""
-    _reject_and_semantics(schedule, "Quartz")
-    years = expand(schedule.year, YEAR_MIN, YEAR_MAX)
-    if not is_open(schedule.year) and max(years) > QUARTZ_YEAR_SPEC.high:
-        raise NotExpressibleError(f"Quartz years stop at {QUARTZ_YEAR_SPEC.high}; this schedule reaches {max(years)}")
+def _quartz_text(schedule: Schedule) -> tuple[str, str]:
+    """The seven Quartz fields and any day-field caveat, with no year check.
+
+    Split out from `render_quartz` because `describable` wants the layout —
+    cron-descriptor reads it — without also inheriting Quartz's 2099 ceiling.
+    """
     dom, dow, caveat = _day_fields(schedule, QUARTZ_DOM_SPEC, QUARTZ_DOW_SPEC, "Quartz")
     fields = (
         render_field(schedule.second, SECOND_SPEC),
@@ -954,15 +1014,25 @@ def render_quartz(schedule: Schedule) -> tuple[str, tuple[str, ...]]:
         dom,
         render_field(schedule.month, MONTH_SPEC),
         dow,
-        render_field(schedule.year, QUARTZ_YEAR_SPEC),
+        render_field(schedule.year, YEAR_SPEC),
     )
+    return " ".join(fields), caveat
+
+
+def render_quartz(schedule: Schedule) -> tuple[str, tuple[str, ...]]:
+    """Render as a seven-field Quartz expression."""
+    _reject_and_semantics(schedule, "Quartz")
+    years = expand(schedule.year, YEAR_MIN, YEAR_MAX)
+    if not is_open(schedule.year) and max(years) > QUARTZ_YEAR_SPEC.high:
+        raise NotExpressibleError(f"Quartz years stop at {QUARTZ_YEAR_SPEC.high}; this schedule reaches {max(years)}")
+    text, caveat = _quartz_text(schedule)
     caveats = [caveat] if caveat else []
     if schedule.tz:
         caveats.append(
             f"Quartz holds the timezone on the trigger, not in the expression: "
             f'call `.inTimeZone(TimeZone.getTimeZone("{schedule.tz}"))` on the CronScheduleBuilder.'
         )
-    return " ".join(fields), tuple(caveats)
+    return text, tuple(caveats)
 
 
 YEAR_WIDTH = 4
@@ -987,25 +1057,26 @@ def _systemd_field(field: Field, spec: FieldSpec, width: int = FIELD_WIDTH) -> s
 
 
 def _systemd_dow(field: Field) -> str:
+    """The weekday prefix, or "" when every weekday matches and it is dropped."""
+    if is_open(field):
+        return ""
     names: list[str] = []
     for term in field or ():
         if isinstance(term, Every):
-            return ""
-        if not isinstance(term, Span):  # pragma: no cover — rejected before we get here
+            # `*/2` restricts the week even though it is spelled with a star,
+            # so it has to be written out rather than dropped.
+            names.append(",".join(SYSTEMD_DOW_NAMES[day] for day in range(0, DAYS_IN_WEEK, term.step)))
+        elif isinstance(term, Span):
+            names.append(_systemd_dow_span(term))
+        else:  # pragma: no cover — rejected before we get here
             raise NotExpressibleError(f"systemd OnCalendar cannot express {term!r}")
-        names.append(_systemd_dow_span(term))
     return ",".join(names)
 
 
 def _systemd_dow_span(term: Span) -> str:
-    if term.hi is None:
-        return SYSTEMD_DOW_NAMES[term.lo]
-    if term.lo > term.hi:
-        wrapped = list(range(term.lo, DAYS_IN_WEEK)) + list(range(term.hi + 1))
-        return ",".join(SYSTEMD_DOW_NAMES[day] for day in wrapped)
-    if term.step > 1:
-        return ",".join(SYSTEMD_DOW_NAMES[day] for day in range(term.lo, term.hi + 1, term.step))
-    return f"{SYSTEMD_DOW_NAMES[term.lo]}..{SYSTEMD_DOW_NAMES[term.hi]}"
+    if term.hi is not None and term.step == 1 and term.lo < term.hi:
+        return f"{SYSTEMD_DOW_NAMES[term.lo]}..{SYSTEMD_DOW_NAMES[term.hi]}"
+    return ",".join(SYSTEMD_DOW_NAMES[day] for day in _dow_span_days(term))
 
 
 def _reject_systemd_specials(schedule: Schedule) -> None:
@@ -1042,7 +1113,7 @@ def render_systemd(schedule: Schedule) -> tuple[str, tuple[str, ...]]:
     weekday = _systemd_dow(schedule.dow)
     text = " ".join(part for part in (weekday, day_spec, clock, schedule.tz or "") if part)
 
-    if schedule.day_match == "or" and not is_open(schedule.dom) and not is_open(schedule.dow):
+    if effective_day_match(schedule) == "or" and not is_open(schedule.dom) and not is_open(schedule.dow):
         raise NotExpressibleError(
             "cron fires when day-of-month OR day-of-week matches; `OnCalendar=` fires only when both match. "
             "No single OnCalendar line has the cron meaning — write one timer per day field, or move the test "
@@ -1138,13 +1209,15 @@ def convert(expr: str, source: str, target: str) -> Conversion:
 def describable(schedule: Schedule) -> tuple[str, bool] | None:
     """An expression cron-descriptor can read, and whether Sunday is 0 in it.
 
-    Quartz says the most — seconds, years, `L`, `W`, `#` — so it is tried
-    first; a schedule that restricts both day fields is not expressible there
-    and falls back to the five-field form.
+    The Quartz layout says the most — seconds, years, `L`, `W`, `#` — so it is
+    used wherever it fits. It does not fit when both day fields are
+    restricted, which only the five-field form carries; and that form in turn
+    cannot carry systemd's ANDing of the two, which is the one schedule with
+    no describable cron layout at all.
     """
-    for render, dow_index_zero in ((render_quartz, False), (render_vixie, True)):
+    if not is_open(schedule.dom) and not is_open(schedule.dow):
         try:
-            return render(schedule)[0], dow_index_zero
+            return render_vixie(schedule)[0], True
         except NotExpressibleError:
-            continue
-    return None
+            return None
+    return _quartz_text(schedule)[0], False
