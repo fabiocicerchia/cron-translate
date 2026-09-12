@@ -99,7 +99,7 @@ guess:
 | Kubernetes CronJob | `k8s`, `kubernetes`, `cronjob` | 5 | robfig/cron v3: day-of-week 0-6 only, no `L`, `W`, `?` or `#`; the zone is `spec.timeZone`, not the expression |
 | AWS EventBridge | `eventbridge`, `aws` | 6 | year field, no seconds, day-of-week 1-7 with **1 = Sunday**, exactly one day field must be `?`, no `/` in day-of-week, one `#` term at most |
 | Quartz | `quartz` | 6-7 | leading seconds, optional year (stops at 2099), day-of-week 1-7, and the full `L` / `L-n` / `LW` / `nW` / `nL` / `n#m` vocabulary |
-| systemd | `systemd`, `oncalendar`, `timer` | — | `DOW Y-M-D H:M:S [TZ]`; `~n` counts back from the end of the month; the weekday is **ANDed** with the date |
+| systemd | `systemd`, `oncalendar`, `timer` | — | `DOW Y-M-D H:M:S [TZ]`; `~n` counts back from the end of the month; the weekday and the date must **both** match |
 
 ```console
 $ cron-translate convert --from quartz --to eventbridge '0 0 12 ? * MON-FRI *'

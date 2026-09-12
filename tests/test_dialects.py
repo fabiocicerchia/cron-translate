@@ -192,12 +192,12 @@ def test_last_weekday_of_the_month() -> None:
     assert _days("0 0 12 LW * ? *", "quartz", count=2) == ["2026-09-30", "2026-10-30"]
 
 
-def test_systemd_ands_weekday_and_date() -> None:
+def test_systemd_requires_both_weekday_and_date() -> None:
     # The 1st that is also a Monday -- far rarer than either on its own.
     assert _days("Mon *-*-01 09:00:00", "systemd", count=2) == ["2027-02-01", "2027-03-01"]
 
 
-def test_cron_ors_weekday_and_date() -> None:
+def test_cron_accepts_either_weekday_or_date() -> None:
     # The same two fields in vixie: every Monday *and* every 1st.
     assert _days("0 9 1 * 1", "vixie", count=3) == ["2026-09-14", "2026-09-21", "2026-09-28"]
 
@@ -322,7 +322,7 @@ def test_a_year_past_the_quartz_ceiling_is_still_describable() -> None:
 # --- cron's day rule: the star, not the set of days ------------------------
 
 
-def test_star_step_day_of_month_ands_rather_than_ors() -> None:
+def test_star_step_day_of_month_requires_both_fields() -> None:
     # Vixie and ISC cron AND the two day fields whenever either is written
     # with a star, `*/10` included. Reading this as OR puts a run on every
     # weekday as well as every tenth day.
@@ -332,7 +332,7 @@ def test_star_step_day_of_month_ands_rather_than_ors() -> None:
     assert _days("0 9 */10 * 1-5", "vixie", count=4) == ["2026-09-21", "2026-10-01", "2026-10-21", "2026-11-11"]
 
 
-def test_no_star_still_ors() -> None:
+def test_no_star_accepts_either_field() -> None:
     assert _days("0 9 1 * 1", "vixie", count=3) == ["2026-09-14", "2026-09-21", "2026-09-28"]
 
 
@@ -343,7 +343,7 @@ def test_full_week_day_of_week_against_a_star_step() -> None:
     assert _days("0 9 */10 * 1-7", "vixie", count=4) == ["2026-09-21", "2026-10-01", "2026-10-11", "2026-10-21"]
 
 
-def test_full_week_day_of_week_without_a_star_ors_to_every_day() -> None:
+def test_full_week_day_of_week_without_a_star_matches_every_day() -> None:
     assert _days("0 9 1 * 0-7", "vixie", count=3) == ["2026-09-12", "2026-09-13", "2026-09-14"]
 
 

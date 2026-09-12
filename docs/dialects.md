@@ -112,11 +112,11 @@ accepted.
 
 Two things set it apart from every cron dialect:
 
-- the weekday is **ANDed** with the date. `Mon *-*-01` is "the 1st, when the
-  1st is a Monday" — not "every Monday and every 1st". A cron expression whose
-  two day fields are ORed therefore has no `OnCalendar=` equivalent, and vice
-  versa. A cron expression that ANDs them because one field carries a star
-  (`0 9 */10 * 1-5`) converts fine.
+- the weekday and the date must **both** match. `Mon *-*-01` is "the 1st,
+  when the 1st is a Monday" — not "every Monday and every 1st". A cron
+  expression that settles for a match on either day field therefore has no
+  `OnCalendar=` equivalent, and vice versa. One that requires both, because a
+  field carries a star (`0 9 */10 * 1-5`), converts fine.
 - it carries its own timezone as a suffix.
 
 `W` (nearest weekday) and `#` (nth weekday) have no systemd spelling at all.
@@ -133,8 +133,8 @@ Two things set it apart from every cron dialect:
 | a restricted year | vixie, k8s | exit 65 |
 | a year past 2099 | quartz | exit 65 |
 | both day fields restricted | eventbridge, quartz | exit 65 — neither can leave both without a `?` |
-| both day fields restricted and ORed (no star) | systemd | exit 65 — `OnCalendar=` only ANDs |
-| weekday ANDed with a date (systemd) | cron dialects, where the rendering would OR | exit 65 |
+| both day fields restricted, either enough (no star) | systemd | exit 65 — `OnCalendar=` needs both |
+| weekday required alongside a date (systemd) | cron dialects, where the rendering would settle for either | exit 65 |
 | `/` in day-of-week | eventbridge | exit 65 |
 | `#` alongside other day-of-week terms | eventbridge | exit 65 |
 

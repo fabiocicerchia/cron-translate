@@ -355,7 +355,8 @@ def _schedule(expr: str, start: datetime) -> croniter:
     """A croniter reading `expr` the way the crontab on the box will read it.
 
     `implement_cron_bug` is croniter's name for what Vixie and ISC cron
-    actually do: day-of-month and day-of-week are ANDed, not ORed, whenever
+    actually do: day-of-month and day-of-week must both match, rather than
+    either of them being enough, whenever
     either field is written with a star. Without it `0 0 */10 * 1-5` is
     reported as "every tenth day or every weekday" when the machine will run
     it on the 1st, 11th, 21st and 31st only, and then only on weekdays. It is

@@ -344,7 +344,7 @@ def test_the_cli_reads_the_day_fields_the_way_the_crontab_will(capsys: pytest.Ca
     assert "Runs between 2026-09-12 00:00 UTC and 2026-11-30 00:00 UTC: 4" in out
 
 
-def test_a_day_rule_without_a_star_still_ors(capsys: pytest.CaptureFixture[str]) -> None:
+def test_a_day_rule_without_a_star_accepts_either_field(capsys: pytest.CaptureFixture[str]) -> None:
     assert main(["0 9 1 * 1", "--between", "2026-09-12T00:00", "2026-09-30T00:00"]) == 0
     out = capsys.readouterr().out
     assert "2026-09-14" in out  # a Monday

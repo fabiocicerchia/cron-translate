@@ -10,8 +10,8 @@ The dialects and the rules encoded here:
 
 vixie
     The five-field crontab everyone knows. Day-of-week 0-6 with 0 and 7 both
-    Sunday; no ``?``, ``L``, ``W`` or ``#``; day-of-month and day-of-week are
-    ORed when both are restricted.
+    Sunday; no ``?``, ``L``, ``W`` or ``#``; a match on either day-of-month
+    or day-of-week is enough when both are restricted.
 k8s
     Kubernetes CronJob `spec.schedule`: vixie as parsed by robfig/cron v3 —
     same five fields, no ``L``/``W``/``?``/``#``, day-of-week 0-6 only, and
@@ -28,8 +28,8 @@ quartz
     ``nL``/``n#m`` vocabulary.
 systemd
     `OnCalendar=` — ``DOW Y-M-D H:M:S [TZ]``. Seconds and years are native,
-    ``~n`` counts back from the end of the month, and the weekday is ANDed
-    with the date rather than ORed.
+    ``~n`` counts back from the end of the month, and the weekday and the
+    date must both match, where cron settles for either.
 """
 
 import calendar
