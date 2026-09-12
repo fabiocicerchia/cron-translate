@@ -5,10 +5,34 @@ cron-translate \- cron expressions in human terms
 .B cron-translate
 .I EXPRESSION
 .RI [ options ]
+.br
+.B cron-translate convert
+.B \-\-from
+.I DIALECT
+.B \-\-to
+.I DIALECT
+.I EXPRESSION
+.RI [ options ]
 .SH DESCRIPTION
 Explains a five-field cron expression in words, lists its next runs in a
-chosen timezone, and warns where daylight-saving transitions will skip or
-repeat one.
+chosen timezone, and flags the runs a daylight-saving transition will skip or
+repeat. The wording of the description comes from cron-descriptor; the
+next-run times come from croniter.
+.PP
+An
+.I EXPRESSION
+may also be an English phrase
+.RB ( "every weekday at 9am" ).
+Where cron cannot express the phrase \(em
+.BR "every 2 weeks" ,
+.BR "last Friday of the month" ,
+.B every 90 minutes
+\(em it says why and offers the closest expression rather than guessing.
+.PP
+.B convert
+moves a schedule between cron dialects. See
+.B DIALECTS
+below.
 .PP
 Quote the expression: most of them contain characters the shell would eat.
 .SH OPTIONS
@@ -20,7 +44,7 @@ IANA timezone for the next runs (default UTC).
 How many next runs to show (default 3).
 .TP
 .B \-\-no\-dst\-check
-Skip the daylight-saving warnings.
+Skip the daylight-saving checks: no per-run flags and no transition warnings.
 .TP
 .BI \-\-between " START END"
 List every run in the closed interval, ISO 8601, e.g.
@@ -28,13 +52,59 @@ List every run in the closed interval, ISO 8601, e.g.
 .TP
 .B \-\-json
 Machine-readable output.
+.SH CONVERT OPTIONS
+.TP
+.BI \-\-from " DIALECT"
+The dialect the expression is written in.
+.TP
+.BI \-\-to " DIALECT"
+The dialect to write it in.
+.PP
+.BR \-\-tz ,
+.BR \-\-next ,
+.B \-\-no\-dst\-check
+and
+.B \-\-json
+work as above. The next runs of both expressions are printed on the same
+clock, the converted text having been parsed back with the target dialect's
+own parser first.
+.SH DIALECTS
+.TP
+.B vixie
+Five-field crontab. Aliases:
+.BR cron ", " crontab ", " unix .
+.TP
+.B k8s
+Kubernetes CronJob
+.BR spec.schedule .
+Aliases:
+.BR kubernetes ", " cronjob .
+.TP
+.B eventbridge
+AWS EventBridge: six fields, a year, day-of-week 1-7 with 1 = Sunday. Alias:
+.BR aws .
+.TP
+.B quartz
+Six or seven fields, leading seconds,
+.BR L ", " W " and " # .
+.TP
+.B systemd
+.BR OnCalendar= .
+Aliases:
+.BR oncalendar ", " timer .
+.PP
+A conversion the target dialect cannot express fails rather than print a
+wrong answer; one that is exact but reads differently prints a caveat.
 .SH EXIT STATUS
 .TP
 .B 0
 The expression was understood.
 .TP
-.B non-zero
-It was not a valid five-field expression.
+.B 64
+It could not be read as an expression or a phrase.
+.TP
+.B 65
+It was read, and the target dialect cannot express it.
 .SH EXAMPLES
 .PP
 Explain a business-hours schedule:
@@ -48,7 +118,14 @@ Next five runs in Rome, with DST warnings:
 .RS
 .B cron-translate '0 3 * * *' \-\-tz Europe/Rome \-\-next 5
 .RE
+.PP
+Move a Quartz trigger to EventBridge:
+.PP
+.RS
+.B cron-translate convert \-\-from quartz \-\-to eventbridge '0 0 12 ? * MON-FRI *'
+.RE
 .SH SEE ALSO
-.BR crontab (5).
+.BR crontab (5),
+.BR systemd.time (7).
 Project documentation:
 https://github.com/fabiocicerchia/cron-translate

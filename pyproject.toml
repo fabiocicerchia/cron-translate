@@ -19,7 +19,7 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
 ]
-dependencies = ["croniter>=2.0"]
+dependencies = ["croniter>=2.0", "cron-descriptor>=2.0"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "ruff>=0.4", "build>=1.2", "basedpyright>=1.31"]
@@ -33,7 +33,7 @@ Changelog = "https://github.com/fabiocicerchia/cron-translate/blob/main/CHANGELO
 cron-translate = "cron_translate:main"
 
 [tool.setuptools]
-py-modules = ["cron_translate"]
+py-modules = ["cron_translate", "cron_dialects"]
 
 [tool.pytest.ini_options]
 # Without this, pytest inserts tests/ on sys.path and `import cron_translate`
