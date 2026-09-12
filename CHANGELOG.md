@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.0](https://github.com/fabiocicerchia/cron-translate/compare/v0.3.1...v0.4.0) (2026-09-12)
+
+
+### Features
+
+* add a cron dialect converter and hand descriptions to cron-descriptor ([#88](https://github.com/fabiocicerchia/cron-translate/issues/88)) ([bbb4463](https://github.com/fabiocicerchia/cron-translate/commit/bbb44634780c2c8952015cc4ea99d754034e46d8))
+
+
+### Documentation
+
+* add a Features section to the README ([#89](https://github.com/fabiocicerchia/cron-translate/issues/89)) ([6d3f0e1](https://github.com/fabiocicerchia/cron-translate/commit/6d3f0e16d9d76e7cf35509d99be4dbb02e2a6492))
+
 ## [0.3.1](https://github.com/fabiocicerchia/cron-translate/compare/v0.3.0...v0.3.1) (2026-09-11)
 
 
