@@ -28,6 +28,19 @@ $ cron-translate '30 2 * * *' --tz America/New_York
   a run may be skipped (spring forward) or duplicated (fall back)
 ```
 
+## Features
+
+- Translates a cron expression into **plain language**, so a review can catch
+  a schedule that does not say what its author thought.
+- Computes **timezone-aware next-run times** with `--tz` on any IANA zone,
+  `--next N` for how many.
+- **Warns on DST transitions** — the thing the web tools do not do: your 02:30
+  job is silently skipped on spring-forward and run twice on fall-back.
+- `--no-dst-check` when you have already accepted that risk.
+- Usable as a crontab validator in CI: exit `0` on a valid expression, `64` on
+  an invalid one.
+- Small, self-contained and pipeable — no service, no config.
+
 ## Install
 
 ```sh
