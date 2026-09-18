@@ -1,0 +1,23 @@
+# Backstage catalog entry, read by paved's scorecard plugin.
+#
+# Every check paved scores is derived from this file alone — no cluster
+# access, no CI credentials. What is absent here is absent from the score.
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: cron-translate
+  description: >-
+      Translates cron expressions into plain English (and back), with timezone support and next-N-runs
+      preview.
+  annotations:
+    github.com/project-slug: fabiocicerchia/cron-translate
+    backstage.io/source-location: url:https://github.com/fabiocicerchia/cron-translate/
+    backstage.io/techdocs-ref: dir:.
+  links:
+    - url: https://github.com/fabiocicerchia/cron-translate
+      title: Source
+spec:
+  type: library
+  lifecycle: production
+  owner: group:default/kodebeat
+  system: oss-tools
