@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/fabiocicerchia/cron-translate/compare/v0.4.0...v0.4.1) (2026-09-20)
+
+
+### Bug Fixes
+
+* **ci:** keep actions: read on the job that uploads sarif ([#104](https://github.com/fabiocicerchia/cron-translate/issues/104)) ([342f7b7](https://github.com/fabiocicerchia/cron-translate/commit/342f7b7c6cd693b375bad34eba4bf7a6c71bf68c))
+
 ## [0.4.0](https://github.com/fabiocicerchia/cron-translate/compare/v0.3.1...v0.4.0) (2026-09-12)
 
 
