@@ -7,7 +7,7 @@ Feature: Describing a cron schedule in plain language
     Given the cron expression "<expression>"
     When the operator describes the expression
     Then the output starts with "<expression>"
-    And the next line starts with "→" and contains "<description>"
+    And the next line is indented and reads "→" followed by a description containing "<description>"
     And the next runs follow the description
 
     Examples:

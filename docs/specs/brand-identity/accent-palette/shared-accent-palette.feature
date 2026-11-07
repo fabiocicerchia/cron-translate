@@ -10,5 +10,5 @@ Feature: Keeping the docs and splash page in one colour family
     Given the maintainer has changed the accent pair once
     When a visitor opens the splash page and then the documentation
     Then the splash title gradient and buttons use the new accent pair
-    And the documentation header, links and highlights use the same accent pair
+    And the documentation links, primary buttons and home-page title use the same accent pair
     And no second copy of the palette needs to be changed

@@ -19,7 +19,7 @@ Feature: Explaining intervals cron cannot express
       | every 5 months  | 0 0 1 */5 * | the gap across the year boundary is 2 months rather than 5                          |
 
   @id:schedule-explanation.beyond-cron.002 @rule:schedule.beyond-cron.inexpressible-refused-with-alternative @verified @source:cron_translate.py#_beyond_cron @test:tests/test_cron_translate.py#test_cli_reports_an_inexpressible_phrase @test:tests/test_cron_translate.py#test_phrase_every_two_weeks_is_refused_with_a_reason @test:tests/test_cron_translate.py#test_phrase_last_friday_offers_the_quartz_form @test:tests/test_cron_translate.py#test_phrase_nth_weekday_offers_the_hash_form @test:tests/test_cron_translate.py#test_phrase_last_day_of_month_offers_l_syntax @test:tests/test_cron_translate.py#test_phrase_interval_longer_than_an_hour_offers_crontab_lines @test:tests/test_cron_translate.py#test_intervals_beyond_a_field_have_no_cron_answer @test:tests/test_cron_translate.py#test_an_interval_that_does_not_tile_a_day_offers_no_crontab_lines @test:tests/test_cron_translate.py#test_interval_boundaries @questionable
-  Scenario Outline: A schedule cron cannot express is refused with the reason and the closest alternative
+  Scenario Outline: A schedule cron cannot express is refused with the reason and, where one exists, the closest alternative
     Given the phrase "<phrase>"
     When the operator describes the phrase
     Then no runs are listed

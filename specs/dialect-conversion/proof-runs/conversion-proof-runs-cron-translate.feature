@@ -10,7 +10,7 @@ Feature: Proving a conversion with side-by-side runs
     And one "→" description line follows
     And the heading reads "Next 3 runs (UTC), both dialects on the same clock:"
     And each row shows the source run and the target run to the second
-    And each caveat appears on its own ⚠ line
+    And no ⚠ caveat line follows, because this conversion carries no caveats
     And the exit status is 0
 
   @id:dialect-conversion.proof-runs.003 @rule:convert.proof.disagreement-reported @inferred @source:cron_translate.py#_convert_main

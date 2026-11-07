@@ -6,5 +6,4 @@ Feature: Reading reference tables on any screen
   Scenario: A table wider than the screen can be scrolled rather than cut off
     Given the "Dialects" page has a table wider than the reader's screen
     When the reader views the table on a narrow screen
-    Then the table appears as a rounded, bordered card with uppercase column headings
-    And the columns beyond the screen edge can be reached by scrolling sideways
+    Then the columns beyond the screen edge can be reached by scrolling sideways
