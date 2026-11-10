@@ -19,12 +19,13 @@ Feature: Reading schedules in each dialect's syntax
       | OnCalendar | systemd     |
       | timer      | systemd     |
 
-  @id:dialect-conversion.supported-dialects.002 @rule:dialect-conversion.dialects.unknown-dialect-refused @verified @source:cron_dialects.py#resolve @test:tests/test_dialects.py#test_unknown_dialect_is_rejected
+  @id:dialect-conversion.supported-dialects.002 @rule:dialect-conversion.dialects.unknown-dialect-refused @verified @source:cron_dialects.py#resolve @test:tests/test_dialects.py#test_unknown_dialect_is_rejected @test:tests/test_cron_translate.py#test_convert_rejects_an_unknown_dialect
   Scenario: An unknown dialect is refused with the list of known ones
     Given no dialect is called cronicle
     When the operator converts 0 9 * * 1-5 from vixie to cronicle
     Then the conversion is refused
     And the message reads unknown dialect 'cronicle'; known dialects are eventbridge, k8s, quartz, systemd, vixie
+    And the exit status is 64
 
   @id:dialect-conversion.supported-dialects.003 @rule:dialect-conversion.dialects.native-shorthands-accepted @verified @source:cron_dialects.py#_expand_macro @test:tests/test_dialects.py#test_macro_expands @test:tests/test_dialects.py#test_systemd_shorthand @test:tests/test_dialects.py#test_eventbridge_cron_wrapper_is_accepted @test:tests/test_dialects.py#test_quartz_year_field_is_optional @test:tests/test_dialects.py#test_systemd_time_field_is_not_mistaken_for_a_timezone
   Scenario Outline: Each dialect's shorthand and wrapper forms are accepted as input

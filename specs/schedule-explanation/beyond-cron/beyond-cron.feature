@@ -40,22 +40,6 @@ Feature: Explaining intervals cron cannot express
       | last day of the month     | 0 0 0 L * ? *                                                       |
       | every 0 minutes           | an interval of zero is not a schedule                               |
 
-  @id:schedule-explanation.beyond-cron.003 @rule:schedule.beyond-cron.whole-unit-intervals-exact @verified @source:cron_translate.py#_interval_translation @test:tests/test_cron_translate.py#test_interval_boundaries @test:tests/test_cron_translate.py#test_phrase_even_steps_stay_exact
-  Scenario Outline: Intervals that fit a cron field evenly are translated without a warning
-    Given the phrase "<phrase>"
-    When the operator describes the phrase
-    Then the output shows the cron expression "<cron>"
-    And no ⚠ warning line is shown
-
-    Examples:
-      | phrase           | cron         |
-      | every 20 minutes | */20 * * * * |
-      | every 1 day      | 0 0 * * *    |
-      | every 24 hours   | 0 0 * * *    |
-      | every 1 week     | 0 0 * * 0    |
-      | every 1 month    | 0 0 1 * *    |
-      | every 6 months   | 0 0 1 */6 *  |
-      | every 12 months  | 0 0 1 1 *    |
 
   @id:schedule-explanation.beyond-cron.004 @rule:schedule.beyond-cron.hour-multiples-in-minutes-refused @inferred @source:cron_translate.py#_minute_interval @questionable
   Scenario Outline: A minute interval that is a whole number of hours is refused although cron can express it

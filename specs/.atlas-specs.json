@@ -281,7 +281,12 @@
   "cron-translate/install": [],
   "cron-translate/makefile": []
  },
- "retired": [],
+ "retired": [
+  "dialect-conversion.caveats-and-limits.002",
+  "run-times.time-window.002",
+  "schedule-explanation.beyond-cron.003",
+  "command-line.errors.002"
+ ],
  "scenarios": {
   "command-line.errors.001": {
    "file": "specs/command-line/errors/cli-errors.feature",
@@ -295,18 +300,6 @@
     "tests/test_cron_translate.py#test_invalid_expression_diagnostic_goes_to_stderr",
     "tests/test_cron_translate.py#test_invalid_expression_exit_code",
     "tests/test_cron_translate.py#test_phrase_unrecognized_returns_none"
-   ]
-  },
-  "command-line.errors.002": {
-   "file": "specs/command-line/errors/cli-errors.feature",
-   "fingerprint": "195cc8e46a02",
-   "human": false,
-   "rule": "cli.errors.unknown-dialect",
-   "source": "cron_translate.py#_convert_main",
-   "status": "verified",
-   "test": "tests/test_cron_translate.py#test_convert_rejects_an_unknown_dialect",
-   "tests": [
-    "tests/test_cron_translate.py#test_convert_rejects_an_unknown_dialect"
    ]
   },
   "command-line.errors.003": {
@@ -380,18 +373,6 @@
    "test": "tests/test_dialects.py#test_impossible_conversions_refuse_and_say_why",
    "tests": [
     "tests/test_dialects.py#test_impossible_conversions_refuse_and_say_why"
-   ]
-  },
-  "dialect-conversion.caveats-and-limits.002": {
-   "file": "specs/dialect-conversion/caveats-and-limits/conversion-caveats-and-refusals.feature",
-   "fingerprint": "949aeebfcb03",
-   "human": false,
-   "rule": "dialect-conversion.caveats.closest-offered-not-equivalent",
-   "source": "cron_dialects.py#_seconds_caveat",
-   "status": "verified",
-   "test": "tests/test_dialects.py#test_impossible_conversion_offers_the_closest_expression",
-   "tests": [
-    "tests/test_dialects.py#test_impossible_conversion_offers_the_closest_expression"
    ]
   },
   "dialect-conversion.caveats-and-limits.003": {
@@ -554,7 +535,8 @@
    "status": "verified",
    "test": "tests/test_dialects.py#test_unknown_dialect_is_rejected",
    "tests": [
-    "tests/test_dialects.py#test_unknown_dialect_is_rejected"
+    "tests/test_dialects.py#test_unknown_dialect_is_rejected",
+    "tests/test_cron_translate.py#test_convert_rejects_an_unknown_dialect"
    ]
   },
   "dialect-conversion.supported-dialects.003": {
@@ -805,18 +787,6 @@
     "tests/test_cron_translate.py#test_runs_between_counts_daily_window"
    ]
   },
-  "run-times.time-window.002": {
-   "file": "specs/run-times/time-window/runs-in-window.feature",
-   "fingerprint": "7562118f6fe0",
-   "human": false,
-   "rule": "runs.window.start-instant-excluded",
-   "source": "cron_translate.py#runs_between",
-   "status": "verified",
-   "test": "tests/test_cron_translate.py#test_runs_between_counts_daily_window",
-   "tests": [
-    "tests/test_cron_translate.py#test_runs_between_counts_daily_window"
-   ]
-  },
   "run-times.time-window.003": {
    "file": "specs/run-times/time-window/runs-in-window.feature",
    "fingerprint": "a39f0487fb87",
@@ -861,19 +831,6 @@
     "tests/test_cron_translate.py#test_interval_boundaries"
    ]
   },
-  "schedule-explanation.beyond-cron.003": {
-   "file": "specs/schedule-explanation/beyond-cron/beyond-cron.feature",
-   "fingerprint": "024725bc3671",
-   "human": false,
-   "rule": "schedule.beyond-cron.whole-unit-intervals-exact",
-   "source": "cron_translate.py#_interval_translation",
-   "status": "verified",
-   "test": "tests/test_cron_translate.py#test_interval_boundaries",
-   "tests": [
-    "tests/test_cron_translate.py#test_interval_boundaries",
-    "tests/test_cron_translate.py#test_phrase_even_steps_stay_exact"
-   ]
-  },
   "schedule-explanation.beyond-cron.004": {
    "file": "specs/schedule-explanation/beyond-cron/beyond-cron.feature",
    "fingerprint": "075197d1b827",
@@ -897,7 +854,9 @@
     "tests/test_cron_translate.py#test_phrase_pm_and_minutes",
     "tests/test_cron_translate.py#test_phrase_named_day",
     "tests/test_cron_translate.py#test_phrase_interval",
-    "tests/test_cron_translate.py#test_cli_reverse_mode"
+    "tests/test_cron_translate.py#test_cli_reverse_mode",
+    "tests/test_cron_translate.py#test_interval_boundaries",
+    "tests/test_cron_translate.py#test_phrase_even_steps_stay_exact"
    ]
   },
   "schedule-explanation.phrase-to-cron.002": {

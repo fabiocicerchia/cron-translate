@@ -21,12 +21,6 @@ Feature: Refusing or qualifying conversions that would change a schedule's meani
       | quartz      | 0 0 9 ? * 2-6/2 *  | eventbridge | EventBridge's day-of-week field does not accept `/`; its wildcards are , - * ? L #               |
       | quartz      | 0 0 9 ? * 6#3,2 *  | eventbridge | EventBridge allows only one expression in day-of-week when `#` is used: 6#3,2 is read as several |
 
-  @id:dialect-conversion.caveats-and-limits.002 @rule:dialect-conversion.caveats.closest-offered-not-equivalent @verified @source:cron_dialects.py#_seconds_caveat @test:tests/test_dialects.py#test_impossible_conversion_offers_the_closest_expression
-  Scenario: A refused seconds conversion offers the closest target expression, marked as not equivalent
-    Given a Quartz schedule 30 0 9 ? * 2-6 * that fires at 09:00:30 on weekdays
-    When the operator converts it from quartz to vixie
-    Then no converted expression is given
-    And the closest vixie expression offered is 0 9 * * 1-5
 
   @id:dialect-conversion.caveats-and-limits.003 @rule:dialect-conversion.caveats.day-rule-mismatch-refused @verified @source:cron_dialects.py#_reject_and_semantics @test:tests/test_dialects.py#test_impossible_conversions_refuse_and_say_why @test:tests/test_dialects.py#test_without_a_star_systemd_still_refuses
   Scenario Outline: A schedule whose day-of-month and weekday combine differently in the target is refused

@@ -16,12 +16,6 @@ Feature: Reporting errors and exit codes
       | do the thing sometimes |
       | every day at 25pm      |
 
-  @id:command-line.errors.002 @rule:cli.errors.unknown-dialect @verified @source:cron_translate.py#_convert_main @test:tests/test_cron_translate.py#test_convert_rejects_an_unknown_dialect
-  Scenario: Converting from or to an unknown dialect is refused
-    Given the vixie schedule "0 9 * * 1-5"
-    When the operator converts it to "cronicle"
-    Then the error output contains "unknown dialect"
-    And the exit status is 64
 
   @id:command-line.errors.003 @rule:cli.errors.impossible-conversion @verified @source:cron_translate.py#_report_impossible @test:tests/test_cron_translate.py#test_convert_offers_the_closest_expression_on_stderr @test:tests/test_cron_translate.py#test_convert_refuses_an_impossible_pair
   Scenario: A conversion the target cannot express is refused, with the closest non-equivalent expression
