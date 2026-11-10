@@ -1,0 +1,1075 @@
+{
+ "excluded": {
+  "cron-translate/cron-dialects": [
+   {
+    "candidate": "Text and JSON rendering of a conversion, exit codes, and the 'two expressions do not agree' warning",
+    "covered_by": "cron_translate.py (command-line module)",
+    "reason": "DUPLICATE_OF",
+    "source": "cron_translate.py#_convert_main"
+   },
+   {
+    "candidate": "DST flags on the source's proof runs (skipped/doubled hour)",
+    "covered_by": "cron_translate.py#dst_notes (dst-safety/per-run-flags)",
+    "reason": "DUPLICATE_OF",
+    "source": "cron_translate.py#_proof_runs"
+   },
+   {
+    "candidate": "Choice of Quartz or five-field layout to feed the describer (describable), including the 2150-year description",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "cron_dialects.py#describable"
+   },
+   {
+    "candidate": "Day-by-day search instead of second-by-second, and the 100-year horizon constant",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "cron_dialects.py#next_runs"
+   },
+   {
+    "candidate": "Dialect registry, Schedule/Term model and FieldSpec tables",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "cron_dialects.py#Dialect"
+   },
+   {
+    "candidate": "Month and weekday names (JAN, MON, full systemd day names) accepted in fields",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "cron_dialects.py#_value"
+   },
+   {
+    "candidate": "Further per-field validation permutations (empty field, bad step, '#' count outside 1-5, '~0', too many systemd parts)",
+    "covered_by": "dialect-conversion.dialects.invalid-source-refused",
+    "reason": "TRIVIAL",
+    "source": "cron_dialects.py#_parse_step"
+   },
+   {
+    "candidate": "Quartz bare 'L' in day-of-week (Saturday) is rejected rather than read",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "cron_dialects.py#_parse_dow_special"
+   },
+   {
+    "candidate": "Remaining impossible pairs that only repeat the same reason for another target (L/W to vixie and k8s, seconds to k8s and EventBridge, systemd AND to k8s and EventBridge)",
+    "covered_by": "dialect-conversion.caveats.missing-feature-refused",
+    "reason": "DUPLICATE_OF",
+    "source": "tests/test_dialects.py#test_impossible_conversions_refuse_and_say_why"
+   },
+   {
+    "candidate": "systemd 'no time zone suffix' Persistent=true caveat",
+    "covered_by": "dialect-conversion.caveats.time-zone-placement",
+    "reason": "DUPLICATE_OF",
+    "source": "cron_dialects.py#render_systemd"
+   }
+  ],
+  "cron-translate/cron-translate": [
+   {
+    "candidate": "Shorthand macros such as @daily are described and run",
+    "covered_by": "",
+    "reason": "UNVERIFIABLE",
+    "source": "cron_translate.py#_resolve_expression"
+   },
+   {
+    "candidate": "Systemd schedules that AND both day fields are described as having no single cron expression",
+    "covered_by": "",
+    "reason": "UNVERIFIABLE",
+    "source": "cron_translate.py#describe_schedule"
+   },
+   {
+    "candidate": "Convert flags DST-affected runs on the source column",
+    "covered_by": "dst.flags.spring-forward-run",
+    "reason": "DUPLICATE_OF",
+    "source": "cron_translate.py#_proof_runs"
+   },
+   {
+    "candidate": "Convert --no-dst-check suppresses run flags",
+    "covered_by": "dst.opt-out.no-dst-check",
+    "reason": "DUPLICATE_OF",
+    "source": "cron_translate.py#_proof_runs"
+   },
+   {
+    "candidate": "Exit-code constants follow sysexits (64 usage, 65 data)",
+    "covered_by": "cli.errors.invalid-expression",
+    "reason": "DUPLICATE_OF",
+    "source": "cron_translate.py#EXIT_USAGE"
+   },
+   {
+    "candidate": "Unrecognised phrase returns no translation (phrase_to_cron wrapper)",
+    "covered_by": "cli.errors.invalid-expression",
+    "reason": "DUPLICATE_OF",
+    "source": "cron_translate.py#phrase_to_cron"
+   },
+   {
+    "candidate": "Week interval honours a weekday argument",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "cron_translate.py#_week_interval"
+   },
+   {
+    "candidate": "Report dataclass and text/JSON renderer split",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "cron_translate.py#Report"
+   },
+   {
+    "candidate": "Gap tested before ambiguity in DST notes",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "cron_translate.py#dst_notes"
+   },
+   {
+    "candidate": "Logging reconfigured with force=True for repeated in-process calls",
+    "covered_by": "",
+    "reason": "TECH_DEVTOOLING",
+    "source": "cron_translate.py#main"
+   },
+   {
+    "candidate": "Quartz-layout expressions are described without reordering when seconds_last is off",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "cron_translate.py#describe"
+   },
+   {
+    "candidate": "--next with zero or negative count, missing --from/--to argparse errors (exit 2)",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "cron_translate.py#_build_parser"
+   },
+   {
+    "candidate": "Help text and epilog pointing to convert --help",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "cron_translate.py#_build_parser"
+   },
+   {
+    "candidate": "Every translated phrase is valid cron",
+    "covered_by": "schedule.beyond-cron.inexpressible-refused-with-alternative",
+    "reason": "DUPLICATE_OF",
+    "source": "cron_translate.py#_interval_translation"
+   }
+  ],
+  "cron-translate/dockerfile": [
+   {
+    "candidate": "Multi-stage build: wheel built in a build stage, only the wheel copied to the runtime stage",
+    "covered_by": "",
+    "reason": "TECH_BUILD",
+    "source": "Dockerfile#build"
+   },
+   {
+    "candidate": "Base images pinned by sha256 digest",
+    "covered_by": "",
+    "reason": "TECH_BUILD",
+    "source": "Dockerfile#FROM"
+   },
+   {
+    "candidate": "Build backend and runtime dependencies installed from hash-pinned lockfiles (--require-hashes, --no-build-isolation, --no-deps)",
+    "covered_by": "",
+    "reason": "TECH_BUILD",
+    "source": "Dockerfile#RUN"
+   },
+   {
+    "candidate": "Wheel and runtime lockfile removed from /tmp after install; pip cache disabled",
+    "covered_by": "",
+    "reason": "TECH_BUILD",
+    "source": "Dockerfile#RUN"
+   },
+   {
+    "candidate": "HEALTHCHECK that only confirms the Python interpreter starts (never checks the CLI)",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "Dockerfile#HEALTHCHECK"
+   },
+   {
+    "candidate": "Recommendation to run with --read-only root filesystem (comment only, not enforced)",
+    "covered_by": "",
+    "reason": "UNVERIFIABLE",
+    "source": "Dockerfile#USER"
+   },
+   {
+    "candidate": "Working directory /app in the runtime image",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "Dockerfile#WORKDIR"
+   }
+  ],
+  "cron-translate/install": [
+   {
+    "candidate": "Installer usage comment with the curl | bash URL",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "install.sh#install.sh"
+   },
+   {
+    "candidate": "Bash shebang and strict-mode flags as such",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "install.sh#install.sh"
+   }
+  ],
+  "cron-translate/makefile": [
+   {
+    "candidate": "make help lists every target that has a ## description, with its description",
+    "covered_by": "",
+    "reason": "TECH_BUILD",
+    "source": "Makefile#help"
+   },
+   {
+    "candidate": "make setup installs the pre-commit hook",
+    "covered_by": "",
+    "reason": "TECH_BUILD",
+    "source": "Makefile#setup"
+   },
+   {
+    "candidate": "make install installs the package with pip",
+    "covered_by": "",
+    "reason": "TECH_BUILD",
+    "source": "Makefile#install"
+   },
+   {
+    "candidate": "make dev does an editable install with the dev extras",
+    "covered_by": "",
+    "reason": "TECH_BUILD",
+    "source": "Makefile#dev"
+   },
+   {
+    "candidate": "make lint runs every pre-commit hook over all files (CLAUDE.md still describes it as 'ruff check .')",
+    "covered_by": "",
+    "reason": "TECH_BUILD",
+    "source": "Makefile#lint"
+   },
+   {
+    "candidate": "make test runs pytest -q",
+    "covered_by": "",
+    "reason": "TECH_BUILD",
+    "source": "Makefile#test"
+   },
+   {
+    "candidate": "make build builds the sdist and wheel",
+    "covered_by": "",
+    "reason": "TECH_BUILD",
+    "source": "Makefile#build"
+   },
+   {
+    "candidate": "make run prints cron-translate --help",
+    "covered_by": "",
+    "reason": "TECH_BUILD",
+    "source": "Makefile#run"
+   },
+   {
+    "candidate": "make format rewrites the sources with ruff format",
+    "covered_by": "",
+    "reason": "TECH_BUILD",
+    "source": "Makefile#format"
+   },
+   {
+    "candidate": "make analyze type-checks the package with basedpyright",
+    "covered_by": "",
+    "reason": "TECH_BUILD",
+    "source": "Makefile#analyze"
+   }
+  ]
+ },
+ "lifted": {
+  "cron-translate/cron-dialects": [],
+  "cron-translate/cron-translate": [],
+  "cron-translate/dockerfile": [
+   {
+    "from_source": "Dockerfile#USER",
+    "rule": "operations.container-image.runs-as-non-root"
+   }
+  ],
+  "cron-translate/install": [],
+  "cron-translate/makefile": []
+ },
+ "retired": [
+  "dialect-conversion.caveats-and-limits.002",
+  "run-times.time-window.002",
+  "schedule-explanation.beyond-cron.003",
+  "command-line.errors.002"
+ ],
+ "scenarios": {
+  "command-line.errors.001": {
+   "file": "specs/command-line/errors/cli-errors.feature",
+   "fingerprint": "c5e7d4cb6050",
+   "human": false,
+   "rule": "cli.errors.invalid-expression",
+   "source": "cron_translate.py#_resolve_expression",
+   "status": "verified",
+   "test": "tests/test_cron_translate.py#test_invalid_expression_diagnostic_goes_to_stderr",
+   "tests": [
+    "tests/test_cron_translate.py#test_invalid_expression_diagnostic_goes_to_stderr",
+    "tests/test_cron_translate.py#test_invalid_expression_exit_code",
+    "tests/test_cron_translate.py#test_phrase_unrecognized_returns_none"
+   ]
+  },
+  "command-line.errors.003": {
+   "file": "specs/command-line/errors/cli-errors.feature",
+   "fingerprint": "4fe6b3caccc8",
+   "human": false,
+   "rule": "cli.errors.impossible-conversion",
+   "source": "cron_translate.py#_report_impossible",
+   "status": "verified",
+   "test": "tests/test_cron_translate.py#test_convert_offers_the_closest_expression_on_stderr",
+   "tests": [
+    "tests/test_cron_translate.py#test_convert_offers_the_closest_expression_on_stderr",
+    "tests/test_cron_translate.py#test_convert_refuses_an_impossible_pair"
+   ]
+  },
+  "command-line.errors.004": {
+   "file": "specs/command-line/errors/cli-errors.feature",
+   "fingerprint": "0ede6181c603",
+   "human": false,
+   "rule": "cli.errors.bad-zone-or-time-crashes",
+   "source": "cron_translate.py#_describe_main",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "command-line.json-output.001": {
+   "file": "specs/command-line/json-output/json-output.feature",
+   "fingerprint": "bbfcd6a3fd68",
+   "human": false,
+   "rule": "cli.json.describe-report",
+   "source": "cron_translate.py#_render_json",
+   "status": "verified",
+   "test": "tests/test_cron_translate.py#test_cli_json_output",
+   "tests": [
+    "tests/test_cron_translate.py#test_cli_json_output",
+    "tests/test_cron_translate.py#test_json_carries_the_per_run_dst_notes"
+   ]
+  },
+  "command-line.json-output.002": {
+   "file": "specs/command-line/json-output/json-output.feature",
+   "fingerprint": "7c08ceda73f7",
+   "human": false,
+   "rule": "cli.json.convert-report",
+   "source": "cron_translate.py#_render_conversion_json",
+   "status": "verified",
+   "test": "tests/test_cron_translate.py#test_convert_json",
+   "tests": [
+    "tests/test_cron_translate.py#test_convert_json"
+   ]
+  },
+  "command-line.json-output.003": {
+   "file": "specs/command-line/json-output/json-output.feature",
+   "fingerprint": "690e69ace40f",
+   "human": false,
+   "rule": "cli.json.errors-as-json",
+   "source": "cron_translate.py#_fail",
+   "status": "verified",
+   "test": "tests/test_cron_translate.py#test_cli_json_invalid_expression",
+   "tests": [
+    "tests/test_cron_translate.py#test_cli_json_invalid_expression",
+    "tests/test_cron_translate.py#test_convert_json_impossible"
+   ]
+  },
+  "dialect-conversion.caveats-and-limits.001": {
+   "file": "specs/dialect-conversion/caveats-and-limits/conversion-caveats-and-refusals.feature",
+   "fingerprint": "d8df36359060",
+   "human": false,
+   "rule": "dialect-conversion.caveats.missing-feature-refused",
+   "source": "cron_dialects.py#_reject_specials",
+   "status": "verified",
+   "test": "tests/test_dialects.py#test_impossible_conversions_refuse_and_say_why",
+   "tests": [
+    "tests/test_dialects.py#test_impossible_conversions_refuse_and_say_why"
+   ]
+  },
+  "dialect-conversion.caveats-and-limits.003": {
+   "file": "specs/dialect-conversion/caveats-and-limits/conversion-caveats-and-refusals.feature",
+   "fingerprint": "31ccafea1531",
+   "human": false,
+   "rule": "dialect-conversion.caveats.day-rule-mismatch-refused",
+   "source": "cron_dialects.py#_reject_and_semantics",
+   "status": "verified",
+   "test": "tests/test_dialects.py#test_impossible_conversions_refuse_and_say_why",
+   "tests": [
+    "tests/test_dialects.py#test_impossible_conversions_refuse_and_say_why",
+    "tests/test_dialects.py#test_without_a_star_systemd_still_refuses"
+   ]
+  },
+  "dialect-conversion.caveats-and-limits.004": {
+   "file": "specs/dialect-conversion/caveats-and-limits/conversion-caveats-and-refusals.feature",
+   "fingerprint": "75b24191bdc8",
+   "human": false,
+   "rule": "dialect-conversion.caveats.starred-day-field-reaches-systemd",
+   "source": "cron_dialects.py#cron_day_match",
+   "status": "verified",
+   "test": "tests/test_dialects.py#test_a_starred_day_field_makes_systemd_reachable",
+   "tests": [
+    "tests/test_dialects.py#test_a_starred_day_field_makes_systemd_reachable"
+   ]
+  },
+  "dialect-conversion.caveats-and-limits.005": {
+   "file": "specs/dialect-conversion/caveats-and-limits/conversion-caveats-and-refusals.feature",
+   "fingerprint": "e74d225f0bc8",
+   "human": false,
+   "rule": "dialect-conversion.caveats.day-field-notes",
+   "source": "cron_dialects.py#_day_caveats",
+   "status": "verified",
+   "test": "tests/test_dialects.py#test_question_mark_conversion_carries_a_caveat",
+   "tests": [
+    "tests/test_dialects.py#test_question_mark_conversion_carries_a_caveat"
+   ]
+  },
+  "dialect-conversion.caveats-and-limits.006": {
+   "file": "specs/dialect-conversion/caveats-and-limits/conversion-caveats-and-refusals.feature",
+   "fingerprint": "4712f9337469",
+   "human": false,
+   "rule": "dialect-conversion.caveats.time-zone-placement",
+   "source": "cron_dialects.py#render_k8s",
+   "status": "verified",
+   "test": "tests/test_dialects.py#test_timezone_survives_from_systemd_as_a_caveat",
+   "tests": [
+    "tests/test_dialects.py#test_timezone_survives_from_systemd_as_a_caveat"
+   ]
+  },
+  "dialect-conversion.convert.001": {
+   "file": "specs/dialect-conversion/convert/converting-between-dialects.feature",
+   "fingerprint": "dc8f10d92b88",
+   "human": false,
+   "rule": "dialect-conversion.convert.same-schedule-in-every-dialect",
+   "source": "cron_dialects.py#convert",
+   "status": "verified",
+   "test": "tests/test_dialects.py#test_every_pair_converts_to_the_canonical_form",
+   "tests": [
+    "tests/test_dialects.py#test_every_pair_converts_to_the_canonical_form"
+   ]
+  },
+  "dialect-conversion.convert.002": {
+   "file": "specs/dialect-conversion/convert/converting-between-dialects.feature",
+   "fingerprint": "4983bf59556a",
+   "human": false,
+   "rule": "dialect-conversion.convert.weekday-numbering-preserved",
+   "source": "cron_dialects.py#_normalise_dow",
+   "status": "verified",
+   "test": "tests/test_dialects.py#test_weekday_numbering_survives_the_round_trip",
+   "tests": [
+    "tests/test_dialects.py#test_weekday_numbering_survives_the_round_trip",
+    "tests/test_dialects.py#test_sunday_seven_is_sunday_zero"
+   ]
+  },
+  "dialect-conversion.convert.003": {
+   "file": "specs/dialect-conversion/convert/converting-between-dialects.feature",
+   "fingerprint": "2fd2a67f155c",
+   "human": false,
+   "rule": "dialect-conversion.convert.ranges-and-steps-rewritten",
+   "source": "cron_dialects.py#_render_term",
+   "status": "verified",
+   "test": "tests/test_dialects.py#test_wrapping_weekday_range_keeps_its_step",
+   "tests": [
+    "tests/test_dialects.py#test_wrapping_weekday_range_keeps_its_step",
+    "tests/test_dialects.py#test_wrapping_weekday_range_without_a_step",
+    "tests/test_dialects.py#test_stepped_weekday_is_not_dropped_by_systemd",
+    "tests/test_dialects.py#test_open_ended_weekday_step_keeps_its_step_in_systemd",
+    "tests/test_dialects.py#test_open_ended_step_renders_as_a_range_for_five_field_dialects",
+    "tests/test_dialects.py#test_systemd_repetition_round_trips",
+    "tests/test_dialects.py#test_whole_week_range_covers_every_day"
+   ]
+  },
+  "dialect-conversion.convert.004": {
+   "file": "specs/dialect-conversion/convert/converting-between-dialects.feature",
+   "fingerprint": "abcda06098af",
+   "human": false,
+   "rule": "dialect-conversion.convert.last-day-as-systemd-tilde",
+   "source": "cron_dialects.py#_systemd_term",
+   "status": "verified",
+   "test": "tests/test_dialects.py#test_systemd_last_day_uses_tilde",
+   "tests": [
+    "tests/test_dialects.py#test_systemd_last_day_uses_tilde"
+   ]
+  },
+  "dialect-conversion.proof-runs.001": {
+   "file": "specs/dialect-conversion/proof-runs/conversion-proof-runs.feature",
+   "fingerprint": "dc8f10d92b88",
+   "human": false,
+   "rule": "dialect-conversion.proof-runs.both-sides-agree",
+   "source": "cron_dialects.py#convert",
+   "status": "verified",
+   "test": "tests/test_dialects.py#test_every_pair_agrees_on_the_next_runs",
+   "tests": [
+    "tests/test_dialects.py#test_every_pair_agrees_on_the_next_runs"
+   ]
+  },
+  "dialect-conversion.proof-runs.002": {
+   "file": "specs/dialect-conversion/proof-runs/conversion-proof-runs-cron-translate.feature",
+   "fingerprint": "c11f0e64899c",
+   "human": false,
+   "rule": "convert.proof.side-by-side-runs",
+   "source": "cron_translate.py#_render_conversion",
+   "status": "verified",
+   "test": "tests/test_cron_translate.py#test_convert_prints_both_expressions_and_both_run_lists",
+   "tests": [
+    "tests/test_cron_translate.py#test_convert_prints_both_expressions_and_both_run_lists",
+    "tests/test_cron_translate.py#test_convert_describes_the_schedule_once"
+   ]
+  },
+  "dialect-conversion.proof-runs.003": {
+   "file": "specs/dialect-conversion/proof-runs/conversion-proof-runs-cron-translate.feature",
+   "fingerprint": "195cc8e46a02",
+   "human": false,
+   "rule": "convert.proof.disagreement-reported",
+   "source": "cron_translate.py#_convert_main",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "dialect-conversion.supported-dialects.001": {
+   "file": "specs/dialect-conversion/supported-dialects/reading-dialect-syntax.feature",
+   "fingerprint": "bcef43a33fa9",
+   "human": false,
+   "rule": "dialect-conversion.dialects.aliases-accepted",
+   "source": "cron_dialects.py#resolve",
+   "status": "verified",
+   "test": "tests/test_dialects.py#test_aliases_resolve",
+   "tests": [
+    "tests/test_dialects.py#test_aliases_resolve"
+   ]
+  },
+  "dialect-conversion.supported-dialects.002": {
+   "file": "specs/dialect-conversion/supported-dialects/reading-dialect-syntax.feature",
+   "fingerprint": "bcef43a33fa9",
+   "human": false,
+   "rule": "dialect-conversion.dialects.unknown-dialect-refused",
+   "source": "cron_dialects.py#resolve",
+   "status": "verified",
+   "test": "tests/test_dialects.py#test_unknown_dialect_is_rejected",
+   "tests": [
+    "tests/test_dialects.py#test_unknown_dialect_is_rejected",
+    "tests/test_cron_translate.py#test_convert_rejects_an_unknown_dialect"
+   ]
+  },
+  "dialect-conversion.supported-dialects.003": {
+   "file": "specs/dialect-conversion/supported-dialects/reading-dialect-syntax.feature",
+   "fingerprint": "a493e40de36d",
+   "human": false,
+   "rule": "dialect-conversion.dialects.native-shorthands-accepted",
+   "source": "cron_dialects.py#_expand_macro",
+   "status": "verified",
+   "test": "tests/test_dialects.py#test_macro_expands",
+   "tests": [
+    "tests/test_dialects.py#test_macro_expands",
+    "tests/test_dialects.py#test_systemd_shorthand",
+    "tests/test_dialects.py#test_eventbridge_cron_wrapper_is_accepted",
+    "tests/test_dialects.py#test_quartz_year_field_is_optional",
+    "tests/test_dialects.py#test_systemd_time_field_is_not_mistaken_for_a_timezone"
+   ]
+  },
+  "dialect-conversion.supported-dialects.004": {
+   "file": "specs/dialect-conversion/supported-dialects/reading-dialect-syntax.feature",
+   "fingerprint": "89c52810bded",
+   "human": false,
+   "rule": "dialect-conversion.dialects.invalid-source-refused",
+   "source": "cron_dialects.py#parse_field",
+   "status": "verified",
+   "test": "tests/test_dialects.py#test_invalid_source_expressions_are_rejected",
+   "tests": [
+    "tests/test_dialects.py#test_invalid_source_expressions_are_rejected"
+   ]
+  },
+  "dst-safety.opt-out.001": {
+   "file": "specs/dst-safety/opt-out/dst-opt-out.feature",
+   "fingerprint": "0ede6181c603",
+   "human": false,
+   "rule": "dst.opt-out.no-dst-check",
+   "source": "cron_translate.py#_describe_main",
+   "status": "verified",
+   "test": "tests/test_cron_translate.py#test_no_dst_check_suppresses_the_run_flags",
+   "tests": [
+    "tests/test_cron_translate.py#test_no_dst_check_suppresses_the_run_flags"
+   ]
+  },
+  "dst-safety.per-run-flags.001": {
+   "file": "specs/dst-safety/per-run-flags/dst-run-flags.feature",
+   "fingerprint": "15f1315f5c86",
+   "human": false,
+   "rule": "dst.flags.spring-forward-run",
+   "source": "cron_translate.py#dst_notes",
+   "status": "verified",
+   "test": "tests/test_cron_translate.py#test_spring_forward_run_is_flagged",
+   "tests": [
+    "tests/test_cron_translate.py#test_spring_forward_run_is_flagged",
+    "tests/test_cron_translate.py#test_json_carries_the_per_run_dst_notes"
+   ]
+  },
+  "dst-safety.per-run-flags.002": {
+   "file": "specs/dst-safety/per-run-flags/dst-run-flags.feature",
+   "fingerprint": "15f1315f5c86",
+   "human": false,
+   "rule": "dst.flags.fall-back-run",
+   "source": "cron_translate.py#dst_notes",
+   "status": "verified",
+   "test": "tests/test_cron_translate.py#test_fall_back_run_is_flagged",
+   "tests": [
+    "tests/test_cron_translate.py#test_fall_back_run_is_flagged"
+   ]
+  },
+  "dst-safety.per-run-flags.003": {
+   "file": "specs/dst-safety/per-run-flags/dst-run-flags.feature",
+   "fingerprint": "15f1315f5c86",
+   "human": false,
+   "rule": "dst.flags.never-in-utc",
+   "source": "cron_translate.py#dst_notes",
+   "status": "verified",
+   "test": "tests/test_cron_translate.py#test_utc_runs_are_never_flagged",
+   "tests": [
+    "tests/test_cron_translate.py#test_utc_runs_are_never_flagged"
+   ]
+  },
+  "dst-safety.transition-warnings.001": {
+   "file": "specs/dst-safety/transition-warnings/dst-transition-warnings.feature",
+   "fingerprint": "e6004253c0fd",
+   "human": false,
+   "rule": "dst.warnings.transition-ahead",
+   "source": "cron_translate.py#dst_warnings",
+   "status": "verified",
+   "test": "tests/test_cron_translate.py#test_dst_warning_fires_for_us_eastern",
+   "tests": [
+    "tests/test_cron_translate.py#test_dst_warning_fires_for_us_eastern"
+   ]
+  },
+  "dst-safety.transition-warnings.002": {
+   "file": "specs/dst-safety/transition-warnings/dst-transition-warnings.feature",
+   "fingerprint": "e6004253c0fd",
+   "human": false,
+   "rule": "dst.warnings.lookahead-limited-to-100-runs",
+   "source": "cron_translate.py#dst_warnings",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "dst-safety.transition-warnings.003": {
+   "file": "specs/dst-safety/transition-warnings/dst-transition-warnings.feature",
+   "fingerprint": "0ede6181c603",
+   "human": false,
+   "rule": "dst.warnings.skipped-for-utc-and-windows",
+   "source": "cron_translate.py#_describe_main",
+   "status": "verified",
+   "test": "tests/test_cron_translate.py#test_cli_json_output",
+   "tests": [
+    "tests/test_cron_translate.py#test_cli_json_output",
+    "tests/test_cron_translate.py#test_spring_forward_run_is_flagged"
+   ]
+  },
+  "operations.container-image.001": {
+   "file": "specs/operations/container-image/container-image.feature",
+   "fingerprint": "41db02e1b4d2",
+   "human": false,
+   "rule": "operations.container-image.runs-cli-with-given-arguments",
+   "source": "Dockerfile#ENTRYPOINT",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "operations.container-image.002": {
+   "file": "specs/operations/container-image/container-image.feature",
+   "fingerprint": "b0e998760f14",
+   "human": false,
+   "rule": "operations.container-image.runs-as-non-root",
+   "source": "Dockerfile#USER",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "operations.installer.001": {
+   "file": "specs/operations/installer/one-line-installer.feature",
+   "fingerprint": "b14de38d96a2",
+   "human": false,
+   "rule": "operations.installer.prefers-pipx-falls-back-to-pip-user",
+   "source": "install.sh#install.sh",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "operations.installer.002": {
+   "file": "specs/operations/installer/one-line-installer.feature",
+   "fingerprint": "b14de38d96a2",
+   "human": false,
+   "rule": "operations.installer.failure-aborts-without-success-message",
+   "source": "install.sh#install.sh",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "run-times.day-matching.001": {
+   "file": "specs/run-times/day-matching/converted-schedule-day-rules.feature",
+   "fingerprint": "00ad5405f8f2",
+   "human": false,
+   "rule": "run-times.day-matching.special-days",
+   "source": "cron_dialects.py#_dom_matches",
+   "status": "verified",
+   "test": "tests/test_dialects.py#test_last_day_of_month",
+   "tests": [
+    "tests/test_dialects.py#test_last_day_of_month",
+    "tests/test_dialects.py#test_days_before_the_last_day",
+    "tests/test_dialects.py#test_nth_weekday_of_month",
+    "tests/test_dialects.py#test_last_weekday_of_month",
+    "tests/test_dialects.py#test_last_weekday_of_the_month",
+    "tests/test_dialects.py#test_nearest_weekday_never_leaves_the_month"
+   ]
+  },
+  "run-times.day-matching.002": {
+   "file": "specs/run-times/day-matching/converted-schedule-day-rules.feature",
+   "fingerprint": "2c715788235e",
+   "human": false,
+   "rule": "run-times.day-matching.systemd-both-cron-either",
+   "source": "cron_dialects.py#_day_matches",
+   "status": "verified",
+   "test": "tests/test_dialects.py#test_systemd_requires_both_weekday_and_date",
+   "tests": [
+    "tests/test_dialects.py#test_systemd_requires_both_weekday_and_date",
+    "tests/test_dialects.py#test_cron_accepts_either_weekday_or_date"
+   ]
+  },
+  "run-times.day-matching.003": {
+   "file": "specs/run-times/day-matching/converted-schedule-day-rules.feature",
+   "fingerprint": "75b24191bdc8",
+   "human": false,
+   "rule": "run-times.day-matching.cron-star-rule",
+   "source": "cron_dialects.py#cron_day_match",
+   "status": "verified",
+   "test": "tests/test_dialects.py#test_star_step_day_of_month_requires_both_fields",
+   "tests": [
+    "tests/test_dialects.py#test_star_step_day_of_month_requires_both_fields",
+    "tests/test_dialects.py#test_full_week_day_of_week_against_a_star_step",
+    "tests/test_dialects.py#test_full_week_day_of_week_without_a_star_matches_every_day",
+    "tests/test_dialects.py#test_whole_week_range_is_still_a_restricted_field"
+   ]
+  },
+  "run-times.day-matching.004": {
+   "file": "specs/run-times/day-matching/converted-schedule-day-rules.feature",
+   "fingerprint": "195f35267ec6",
+   "human": false,
+   "rule": "run-times.day-matching.sparse-schedules",
+   "source": "cron_dialects.py#next_runs",
+   "status": "verified",
+   "test": "tests/test_dialects.py#test_year_field_limits_the_walk",
+   "tests": [
+    "tests/test_dialects.py#test_year_field_limits_the_walk",
+    "tests/test_dialects.py#test_horizon_reaches_far_enough_for_a_sparse_schedule"
+   ]
+  },
+  "run-times.day-matching.005": {
+   "file": "specs/run-times/day-matching/day-matching.feature",
+   "fingerprint": "c9b638e96d6c",
+   "human": false,
+   "rule": "runs.day-matching.star-field-requires-both",
+   "source": "cron_translate.py#_schedule",
+   "status": "verified",
+   "test": "tests/test_cron_translate.py#test_the_cli_reads_the_day_fields_the_way_the_crontab_will",
+   "tests": [
+    "tests/test_cron_translate.py#test_the_cli_reads_the_day_fields_the_way_the_crontab_will",
+    "tests/test_cron_translate.py#test_a_day_rule_without_a_star_accepts_either_field"
+   ]
+  },
+  "run-times.next-runs.001": {
+   "file": "specs/run-times/next-runs/next-runs.feature",
+   "fingerprint": "3c4d24f33a39",
+   "human": false,
+   "rule": "runs.next.upcoming-runs-with-countdown",
+   "source": "cron_translate.py#_render_text",
+   "status": "verified",
+   "test": "tests/test_cron_translate.py#test_cli_happy_path",
+   "tests": [
+    "tests/test_cron_translate.py#test_cli_happy_path"
+   ]
+  },
+  "run-times.time-window.001": {
+   "file": "specs/run-times/time-window/runs-in-window.feature",
+   "fingerprint": "7562118f6fe0",
+   "human": false,
+   "rule": "runs.window.lists-runs-in-window",
+   "source": "cron_translate.py#runs_between",
+   "status": "verified",
+   "test": "tests/test_cron_translate.py#test_cli_between",
+   "tests": [
+    "tests/test_cron_translate.py#test_cli_between",
+    "tests/test_cron_translate.py#test_runs_between_counts_daily_window"
+   ]
+  },
+  "run-times.time-window.003": {
+   "file": "specs/run-times/time-window/runs-in-window.feature",
+   "fingerprint": "a39f0487fb87",
+   "human": false,
+   "rule": "runs.window.times-read-in-chosen-zone",
+   "source": "cron_translate.py#_parse_dt",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "schedule-explanation.beyond-cron.001": {
+   "file": "specs/schedule-explanation/beyond-cron/beyond-cron.feature",
+   "fingerprint": "075197d1b827",
+   "human": false,
+   "rule": "schedule.beyond-cron.inexact-interval-runs-with-warning",
+   "source": "cron_translate.py#_minute_interval",
+   "status": "verified",
+   "test": "tests/test_cron_translate.py#test_cli_runs_an_inexact_phrase_and_says_so",
+   "tests": [
+    "tests/test_cron_translate.py#test_cli_runs_an_inexact_phrase_and_says_so",
+    "tests/test_cron_translate.py#test_phrase_uneven_minute_step_is_translated_but_flagged",
+    "tests/test_cron_translate.py#test_phrase_day_step_flags_the_month_boundary"
+   ]
+  },
+  "schedule-explanation.beyond-cron.002": {
+   "file": "specs/schedule-explanation/beyond-cron/beyond-cron.feature",
+   "fingerprint": "fffbafd66e73",
+   "human": false,
+   "rule": "schedule.beyond-cron.inexpressible-refused-with-alternative",
+   "source": "cron_translate.py#_beyond_cron",
+   "status": "verified",
+   "test": "tests/test_cron_translate.py#test_cli_reports_an_inexpressible_phrase",
+   "tests": [
+    "tests/test_cron_translate.py#test_cli_reports_an_inexpressible_phrase",
+    "tests/test_cron_translate.py#test_phrase_every_two_weeks_is_refused_with_a_reason",
+    "tests/test_cron_translate.py#test_phrase_last_friday_offers_the_quartz_form",
+    "tests/test_cron_translate.py#test_phrase_nth_weekday_offers_the_hash_form",
+    "tests/test_cron_translate.py#test_phrase_last_day_of_month_offers_l_syntax",
+    "tests/test_cron_translate.py#test_phrase_interval_longer_than_an_hour_offers_crontab_lines",
+    "tests/test_cron_translate.py#test_intervals_beyond_a_field_have_no_cron_answer",
+    "tests/test_cron_translate.py#test_an_interval_that_does_not_tile_a_day_offers_no_crontab_lines",
+    "tests/test_cron_translate.py#test_interval_boundaries"
+   ]
+  },
+  "schedule-explanation.beyond-cron.004": {
+   "file": "specs/schedule-explanation/beyond-cron/beyond-cron.feature",
+   "fingerprint": "075197d1b827",
+   "human": false,
+   "rule": "schedule.beyond-cron.hour-multiples-in-minutes-refused",
+   "source": "cron_translate.py#_minute_interval",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "schedule-explanation.phrase-to-cron.001": {
+   "file": "specs/schedule-explanation/phrase-to-cron/phrase-to-cron.feature",
+   "fingerprint": "798e0f05e42d",
+   "human": false,
+   "rule": "schedule.phrase.translates-to-cron",
+   "source": "cron_translate.py#translate_phrase",
+   "status": "verified",
+   "test": "tests/test_cron_translate.py#test_phrase_weekday_at_time",
+   "tests": [
+    "tests/test_cron_translate.py#test_phrase_weekday_at_time",
+    "tests/test_cron_translate.py#test_phrase_pm_and_minutes",
+    "tests/test_cron_translate.py#test_phrase_named_day",
+    "tests/test_cron_translate.py#test_phrase_interval",
+    "tests/test_cron_translate.py#test_cli_reverse_mode",
+    "tests/test_cron_translate.py#test_interval_boundaries",
+    "tests/test_cron_translate.py#test_phrase_even_steps_stay_exact"
+   ]
+  },
+  "schedule-explanation.phrase-to-cron.002": {
+   "file": "specs/schedule-explanation/phrase-to-cron/phrase-to-cron.feature",
+   "fingerprint": "7bc1f95c9374",
+   "human": false,
+   "rule": "schedule.phrase.unrecognised-words-dropped",
+   "source": "cron_translate.py#_weekday_field",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "schedule-explanation.plain-language.001": {
+   "file": "specs/schedule-explanation/plain-language/describing-schedules.feature",
+   "fingerprint": "7334db42156b",
+   "human": false,
+   "rule": "schedule.describe.plain-english-sentence",
+   "source": "cron_translate.py#describe",
+   "status": "verified",
+   "test": "tests/test_cron_translate.py#test_describe_simple_time",
+   "tests": [
+    "tests/test_cron_translate.py#test_describe_simple_time",
+    "tests/test_cron_translate.py#test_describe_weekdays"
+   ]
+  },
+  "schedule-explanation.plain-language.002": {
+   "file": "specs/schedule-explanation/plain-language/describing-schedules.feature",
+   "fingerprint": "fa21089e5f28",
+   "human": false,
+   "rule": "schedule.describe.trailing-seconds-field",
+   "source": "cron_translate.py#_seconds_first",
+   "status": "verified",
+   "test": "tests/test_cron_translate.py#test_croniter_seconds_field_is_moved_to_the_front_for_the_description",
+   "tests": [
+    "tests/test_cron_translate.py#test_croniter_seconds_field_is_moved_to_the_front_for_the_description",
+    "tests/test_cron_translate.py#test_cli_describes_a_six_field_expression_correctly"
+   ]
+  },
+  "schedule-explanation.plain-language.003": {
+   "file": "specs/schedule-explanation/plain-language/describing-schedules.feature",
+   "fingerprint": "7334db42156b",
+   "human": false,
+   "rule": "schedule.describe.falls-back-to-expression",
+   "source": "cron_translate.py#describe",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  }
+ },
+ "taxonomy": {
+  "domains": [
+   {
+    "areas": [
+     {
+      "description": "Describes a cron expression's minutes, hours, days, months and weekdays as readable English.",
+      "slug": "plain-language",
+      "title": "Plain-language descriptions"
+     },
+     {
+      "description": "Expands shortcuts such as @daily, @hourly and @weekly into full schedules before describing them.",
+      "slug": "macros",
+      "title": "Shorthand macros"
+     },
+     {
+      "description": "Handles expressions with a seconds field (first or last) and weekday numbering that starts at 0 or 1.",
+      "slug": "seconds-and-weekday-numbering",
+      "title": "Seconds fields and weekday numbering"
+     },
+     {
+      "description": "Translates English phrases like \"every 15 minutes\" or \"last day of the month\" into cron expressions.",
+      "slug": "phrase-to-cron",
+      "title": "Phrase to cron"
+     },
+     {
+      "description": "Explains when a requested interval (e.g. every 7 days, every 90 minutes) can't be expressed exactly in cron, and gives the closest alternatives.",
+      "slug": "beyond-cron",
+      "title": "Schedules cron cannot express"
+     }
+    ],
+    "description": "Turning a schedule into plain language, and plain-language phrases back into schedules.",
+    "slug": "schedule-explanation",
+    "title": "Schedule Explanation"
+   },
+   {
+    "areas": [
+     {
+      "description": "Lists the next N times a schedule fires, with how far away each one is.",
+      "slug": "next-runs",
+      "title": "Next runs"
+     },
+     {
+      "description": "Lists every run between a given start and end time.",
+      "slug": "time-window",
+      "title": "Runs within a time window"
+     },
+     {
+      "description": "Calculates run times in any IANA time zone, defaulting to UTC.",
+      "slug": "time-zones",
+      "title": "Time zones"
+     },
+     {
+      "description": "Applies the rules for combining day-of-month and weekday fields (OR vs AND) and special days such as last day, nearest weekday and nth weekday.",
+      "slug": "day-matching",
+      "title": "Day-of-month and weekday matching"
+     }
+    ],
+    "description": "Working out when a schedule actually fires, in the user's time zone.",
+    "slug": "run-times",
+    "title": "Run Times"
+   },
+   {
+    "areas": [
+     {
+      "description": "Scans upcoming runs and warns when a schedule hits a daylight-saving change in the chosen zone.",
+      "slug": "transition-warnings",
+      "title": "DST transition warnings"
+     },
+     {
+      "description": "Marks individual runs that land in a skipped (spring-forward) or repeated (fall-back) hour.",
+      "slug": "per-run-flags",
+      "title": "Per-run DST flags"
+     },
+     {
+      "description": "Lets users skip all DST checks for faster or quieter output.",
+      "slug": "opt-out",
+      "title": "Turning off DST checks"
+     }
+    ],
+    "description": "Warning users when clock changes make a schedule skip or repeat a run.",
+    "slug": "dst-safety",
+    "title": "Daylight Saving Safety"
+   },
+   {
+    "areas": [
+     {
+      "description": "Recognises Vixie cron, Kubernetes CronJob, AWS EventBridge, Quartz and systemd calendar syntax and checks expressions against each one's rules.",
+      "slug": "supported-dialects",
+      "title": "Supported dialects"
+     },
+     {
+      "description": "Supports dialect-specific tokens such as L, W, #, ? and named days and months, and rejects them where a dialect doesn't allow them.",
+      "slug": "special-tokens",
+      "title": "Special tokens"
+     },
+     {
+      "description": "Rewrites a schedule from a source dialect into a target dialect, keeping its meaning.",
+      "slug": "convert",
+      "title": "Converting between dialects"
+     },
+     {
+      "description": "Points out where meaning shifts in conversion (seconds, years, day matching) and explains why a schedule can't be expressed in the target.",
+      "slug": "caveats-and-limits",
+      "title": "Caveats and unconvertible schedules"
+     },
+     {
+      "description": "Shows upcoming runs of the converted schedule so users can check the conversion is correct.",
+      "slug": "proof-runs",
+      "title": "Proof runs"
+     }
+    ],
+    "description": "Reading schedules written for different schedulers and rewriting them for another.",
+    "slug": "dialect-conversion",
+    "title": "Dialect Conversion"
+   },
+   {
+    "areas": [
+     {
+      "description": "The describe and convert commands, their flags, defaults and help text.",
+      "slug": "commands-and-options",
+      "title": "Commands and options"
+     },
+     {
+      "description": "Formats descriptions, runs, warnings and conversions as readable terminal text.",
+      "slug": "text-output",
+      "title": "Human-readable output"
+     },
+     {
+      "description": "Outputs the same results as structured JSON for scripts and automation.",
+      "slug": "json-output",
+      "title": "JSON output"
+     },
+     {
+      "description": "Reports invalid expressions, unknown dialects and time zones, and impossible conversions with clear messages and non-zero exit codes.",
+      "slug": "errors",
+      "title": "Error reporting and exit codes"
+     }
+    ],
+    "description": "How users call the tool and read what it returns.",
+    "slug": "command-line",
+    "title": "Command-Line Experience"
+   },
+   {
+    "areas": [
+     {
+      "description": "Installs the CLI from the repository with pipx, falling back to pip --user.",
+      "slug": "installer",
+      "title": "One-line installer"
+     },
+     {
+      "description": "A multi-stage, hash-pinned, non-root Docker image that runs the CLI.",
+      "slug": "container-image",
+      "title": "Container image"
+     },
+     {
+      "description": "Make targets to set up hooks, install, lint, test and build the package.",
+      "slug": "dev-tasks",
+      "title": "Build and development tasks"
+     }
+    ],
+    "description": "Installing, packaging, containerising and developing the tool.",
+    "slug": "operations",
+    "title": "Distribution and Developer Tooling"
+   }
+  ]
+ }
+}

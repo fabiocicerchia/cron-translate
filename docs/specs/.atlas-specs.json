@@ -1,0 +1,264 @@
+{
+ "excluded": {
+  "stylesheets/extra": [
+   {
+    "candidate": "Hero banner with gradient title and tagline on the docs home",
+    "covered_by": "",
+    "reason": "UNVERIFIABLE",
+    "source": "docs/stylesheets/extra.css#.md-typeset .hero"
+   },
+   {
+    "candidate": "Primary gradient and secondary pill buttons with hover lift",
+    "covered_by": "",
+    "reason": "UNVERIFIABLE",
+    "source": "docs/stylesheets/extra.css#.md-typeset .md-button"
+   },
+   {
+    "candidate": "Feature cards with accent icons and hover lift",
+    "covered_by": "",
+    "reason": "UNVERIFIABLE",
+    "source": "docs/stylesheets/extra.css#.md-typeset .grid.cards > ul > li"
+   },
+   {
+    "candidate": "Heading weights, letter-spacing and kerning",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "docs/stylesheets/extra.css#.md-typeset h1"
+   },
+   {
+    "candidate": "Rounded, bordered code blocks",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "docs/stylesheets/extra.css#.md-typeset .highlight"
+   },
+   {
+    "candidate": "Translucent blurred header with hairline divider and scroll shadow",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "docs/stylesheets/extra.css#.md-header"
+   },
+   {
+    "candidate": "Dark-scheme header and tabs painted near-black",
+    "covered_by": "docs.schemes.link-colour-readable-per-scheme",
+    "reason": "DUPLICATE_OF",
+    "source": "docs/stylesheets/extra.css#[data-md-color-scheme=\"slate\"] .md-header"
+   },
+   {
+    "candidate": "Footer copyright and previous/next links in muted colour with top divider",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "docs/stylesheets/extra.css#.md-footer-meta"
+   },
+   {
+    "candidate": "Smooth scrolling to in-page anchors",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "docs/stylesheets/extra.css#html"
+   },
+   {
+    "candidate": "Sidebar active page in heavier weight",
+    "covered_by": "docs.navigation.current-location-emphasised",
+    "reason": "DUPLICATE_OF",
+    "source": "docs/stylesheets/extra.css#.md-nav__link--active"
+   },
+   {
+    "candidate": "Docs build needs no remote stylesheet assets",
+    "covered_by": "docs.privacy.no-third-party-requests",
+    "reason": "DUPLICATE_OF",
+    "source": "docs/stylesheets/extra.css#:root"
+   }
+  ]
+ },
+ "lifted": {
+  "stylesheets/extra": []
+ },
+ "retired": [],
+ "scenarios": {
+  "docs.brand-identity.accent-palette.001": {
+   "file": "docs/specs/brand-identity/accent-palette/shared-accent-palette.feature",
+   "fingerprint": "d1e8fee7d3b2",
+   "human": false,
+   "rule": "docs.brand.single-accent-pair-shared-by-splash-and-docs",
+   "source": "docs/stylesheets/extra.css#:root",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "docs.brand-identity.logo.001": {
+   "file": "docs/specs/brand-identity/logo/brand-logo.feature",
+   "fingerprint": "c702704e5aae",
+   "human": false,
+   "rule": "docs.brand.no-stand-in-logo",
+   "source": "docs/stylesheets/extra.css#.md-header__button.md-logo",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "docs.colour-schemes.contrast-legibility.001": {
+   "file": "docs/specs/colour-schemes/contrast-legibility/scheme-legibility.feature",
+   "fingerprint": "433084a194b6",
+   "human": false,
+   "rule": "docs.schemes.link-colour-readable-per-scheme",
+   "source": "docs/stylesheets/extra.css#[data-md-color-scheme=\"slate\"]",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "docs.content-presentation.reference-tables.001": {
+   "file": "docs/specs/content-presentation/reference-tables/reference-tables.feature",
+   "fingerprint": "721086d36c47",
+   "human": false,
+   "rule": "docs.content.tables-scroll-not-clip",
+   "source": "docs/stylesheets/extra.css#.md-typeset table:not([class])",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "docs.privacy-offline.no-external-requests.001": {
+   "file": "docs/specs/privacy-offline/no-external-requests/private-offline-docs.feature",
+   "fingerprint": "d1e8fee7d3b2",
+   "human": false,
+   "rule": "docs.privacy.no-third-party-requests",
+   "source": "docs/stylesheets/extra.css#:root",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "docs.site-navigation.header-tabs.001": {
+   "file": "docs/specs/site-navigation/header-tabs/navigation-location-cues.feature",
+   "fingerprint": "ea1932ae8d92",
+   "human": false,
+   "rule": "docs.navigation.current-location-emphasised",
+   "source": "docs/stylesheets/extra.css#.md-tabs__link--active",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  }
+ },
+ "taxonomy": {
+  "domains": [
+   {
+    "areas": [
+     {
+      "description": "The single shared accent colour pair that sets the site's colour family and is reused by the splash page.",
+      "slug": "accent-palette",
+      "title": "Accent palette"
+     },
+     {
+      "description": "System font stacks and heading weights that give the docs their look without downloading web fonts.",
+      "slug": "typography",
+      "title": "Typography"
+     },
+     {
+      "description": "How the header shows or hides a brand logo when the project has none.",
+      "slug": "logo",
+      "title": "Logo"
+     }
+    ],
+    "description": "How the documentation site looks like part of the cron-translate product family.",
+    "slug": "brand-identity",
+    "title": "Brand identity"
+   },
+   {
+    "areas": [
+     {
+      "description": "Following the operating-system preference with a manual light/dark toggle.",
+      "slug": "scheme-switching",
+      "title": "Scheme switching"
+     },
+     {
+      "description": "Link, header and background colours chosen so text stays readable in each scheme.",
+      "slug": "contrast-legibility",
+      "title": "Contrast and legibility"
+     }
+    ],
+    "description": "How the site stays legible whether the reader uses a light, dark or system colour scheme.",
+    "slug": "colour-schemes",
+    "title": "Light and dark modes"
+   },
+   {
+    "areas": [
+     {
+      "description": "The translucent header and top tabs that show where the reader is.",
+      "slug": "header-tabs",
+      "title": "Header and tabs"
+     },
+     {
+      "description": "The side navigation, which highlights the active page.",
+      "slug": "sidebar",
+      "title": "Sidebar"
+     },
+     {
+      "description": "The footer with copyright and previous/next page links.",
+      "slug": "footer",
+      "title": "Footer"
+     },
+     {
+      "description": "Smooth scrolling when jumping to anchors within a page.",
+      "slug": "scrolling",
+      "title": "Scrolling"
+     }
+    ],
+    "description": "How readers move around the documentation site.",
+    "slug": "site-navigation",
+    "title": "Site navigation"
+   },
+   {
+    "areas": [
+     {
+      "description": "The headline, tagline and gradient title at the top of the docs home.",
+      "slug": "hero",
+      "title": "Hero banner"
+     },
+     {
+      "description": "Primary and secondary buttons that send visitors to get started or to the repository.",
+      "slug": "calls-to-action",
+      "title": "Calls to action"
+     },
+     {
+      "description": "Icon-led cards with hover effects that list what the tool does.",
+      "slug": "feature-cards",
+      "title": "Feature cards"
+     }
+    ],
+    "description": "The landing experience that introduces cron-translate to new visitors.",
+    "slug": "home-page",
+    "title": "Home page"
+   },
+   {
+    "areas": [
+     {
+      "description": "Rounded, bordered code blocks for command and cron expression examples.",
+      "slug": "code-examples",
+      "title": "Code examples"
+     },
+     {
+      "description": "Card-style tables that scroll on narrow screens instead of being cut off.",
+      "slug": "reference-tables",
+      "title": "Reference tables"
+     }
+    ],
+    "description": "How documentation content such as examples and reference tables is shown on the page.",
+    "slug": "content-presentation",
+    "title": "Content presentation"
+   },
+   {
+    "areas": [
+     {
+      "description": "No CDN, web font or analytics calls, so the docs can be read privately and offline.",
+      "slug": "no-external-requests",
+      "title": "No external requests"
+     },
+     {
+      "description": "Self-contained styling, so building the docs never depends on remote assets.",
+      "slug": "reproducible-builds",
+      "title": "Reproducible builds"
+     }
+    ],
+    "description": "Promises that the documentation works without contacting outside services.",
+    "slug": "privacy-offline",
+    "title": "Privacy and offline use"
+   }
+  ]
+ }
+}
