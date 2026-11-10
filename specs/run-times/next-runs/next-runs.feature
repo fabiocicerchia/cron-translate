@@ -8,7 +8,7 @@ Feature: Listing upcoming runs
     When the operator describes it with <options>
     Then the heading reads "Next <count> runs (<zone>):"
     And <count> run lines follow, each showing date, HH:MM time and zone abbreviation
-    And each run line ends with "(in Nd)" when the run is a day or more away, otherwise "(in X.Xh)"
+    And each run line ends with a countdown in days, such as "(in 2d)", when the run is a day or more away, otherwise in hours, such as "(in 3.5h)"
 
     Examples:
       | options                   | count | zone        |
