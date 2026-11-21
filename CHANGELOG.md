@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.2](https://github.com/fabiocicerchia/cron-translate/compare/v0.4.1...v0.4.2) (2026-11-19)
+
+
+### Bug Fixes
+
+* **ci:** quote boneyard release label so the PR number is sent ([#157](https://github.com/fabiocicerchia/cron-translate/issues/157)) ([1acaf4e](https://github.com/fabiocicerchia/cron-translate/commit/1acaf4eaa21a28b6b71333b99bb6e844131a002f))
+
 ## [0.4.1](https://github.com/fabiocicerchia/cron-translate/compare/v0.4.0...v0.4.1) (2026-09-20)
 
 
