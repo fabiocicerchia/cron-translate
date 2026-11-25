@@ -14,9 +14,9 @@ colorama==0.4.6 ; os_name == 'nt' or sys_platform == 'win32' \
     # via
     #   build
     #   pytest
-cron-descriptor==2.2.1 \
-    --hash=sha256:23b42aca983841333aaf28095024e0457f005621d03e658edbd7316a5f2bbd42 \
-    --hash=sha256:6759056f43b3cabca274b5df182bb63571f2f383bdd4d9d3ff4662c527430a65
+cron-descriptor==2.3.1 \
+    --hash=sha256:7112f8f682c14e0fd17377c0e0e514764ac9b64eae8c1df7e1c52d702b39ea40 \
+    --hash=sha256:edb8030b338c0be798c15e71906fe76eb7f1b135fd18d5e43a70351d93532387
     # via cron-translate (pyproject.toml)
 croniter==7.0.0 \
     --hash=sha256:92090bce3cef195a037a46b78430c4cdd6250e90671d9d7dcd9e486147daaca4 \
